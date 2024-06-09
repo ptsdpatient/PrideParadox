@@ -32,6 +32,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import org.w3c.dom.css.Rect;
+
 
 public class PrideParadox extends ApplicationAdapter {
     public static GameState gameState = GameState.Menu;
@@ -50,7 +52,7 @@ public class PrideParadox extends ApplicationAdapter {
     public Viewport viewport;
     public static Rectangle choiceABounds,choiceBBounds;
     public InputProcessor input;
-    public Texture menuBG, cursorTexture, gamepadConnect,htp;
+    public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
     public TextureRegion[] loadButtonSheet;
     public ShapeRenderer shapeRenderer;
     public static String typewriter,dialogueMessage="";
@@ -58,6 +60,8 @@ public class PrideParadox extends ApplicationAdapter {
     BitmapFont titleFont;
     GlyphLayout layout;
     String[] menuButtonNames = {"START", "HOW TO PLAY?", "EXIT"};
+    String[] arenaBoundNames={"up","down","left","right"};
+    public static Array<ArenaBounds> arenaBounds=new Array<>();
     public enum GameState {Menu, Load, Save, Pause, Play, Instructions}
     public enum choiceState{A,B}
     static choiceState choice=choiceState.A;
@@ -175,6 +179,10 @@ public class PrideParadox extends ApplicationAdapter {
         dialogueFont = new BitmapFont(files("dialog.fnt"));
         choiceFont= new BitmapFont(files("choice.fnt"));
         background = new Texture(files("dialogue.png"));
+        arena=new Texture(files("arena.png"));
+
+        for(String name: arenaBoundNames) arenaBounds.add(new ArenaBounds(name));
+
         dialogueFont.getData().setScale(0.85f);
 
         choiceABounds=new Rectangle(120,720/2f,1280/3f,100);
@@ -224,6 +232,10 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
 
             case Play: {
+                if(fight){
+                    batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
+
+                }
                 if(drawingDialogue){
                     currentLine = levels.get(currentLevel).get(storyLineIndex);
                     if(currentLine.choice!=null) {
@@ -240,7 +252,6 @@ public class PrideParadox extends ApplicationAdapter {
                         if(!choiceMode)choiceMode=true;
                         drawChoice(batch,currentLine);
                     }else {
-
                         int i = 0;
                         if ((currentLine.depth > lineDepth) && (currentLine.depth != 0)) {
                             for (StoryLine storyLine = currentLine; i != lineDepth + 1; storyLine = storyLine.choiceA) {
@@ -259,7 +270,6 @@ public class PrideParadox extends ApplicationAdapter {
 
 
                     drawText(batch,currentLine);
-
                 }
             }break;
 
@@ -281,7 +291,10 @@ public class PrideParadox extends ApplicationAdapter {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.setColor(Color.GREEN);
+        for(ArenaBounds bounds:arenaBounds){
+            shapeRenderer.rect(bounds.bounds.getX(),bounds.bounds.getY(),bounds.bounds.getWidth(),bounds.bounds.getHeight());
+        }
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -307,6 +320,27 @@ public class PrideParadox extends ApplicationAdapter {
         lineDepth=0;
     }
 
+
+    public static class ArenaBounds{
+        Rectangle bounds;
+        String name;
+        public ArenaBounds(String name){
+            switch(name){
+                case "up":{
+                    bounds=new Rectangle(640,50,50,50);
+                }break;
+                case "down":{
+                    bounds=new Rectangle(640,50,50,50);
+                }break;
+                case "left":{
+                    bounds=new Rectangle(640,50,50,50);
+                }break;
+                case "right":{
+                    bounds=new Rectangle(640,50,50,50);
+                }break;
+            }
+        }
+    }
     public static class StoryLine {
         public String message;
         public String byLine;
@@ -594,7 +628,7 @@ public class PrideParadox extends ApplicationAdapter {
                             }else lineSkip=true;
                         }
                     }
-                }
+                }break;
                 case Instructions:{
                     if(checkExitKey(keycode)){
                         gameState=GameState.Menu;
