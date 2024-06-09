@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.DistanceFieldFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -39,22 +40,28 @@ public class PrideParadox extends ApplicationAdapter {
     public static GameState gameState = GameState.Menu;
     public static Vector3 touch;
     public static Vector2 point;
+    public static Sprite player;
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f,playerRotation=0;
     public static int menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0;
-    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false;
+    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
+    public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
     public Viewport viewport;
     public static Rectangle choiceABounds,choiceBBounds;
     public InputProcessor input;
     public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
+    public TextureRegion playerSheet;
+    public static TextureRegion playerFrame;
     public TextureRegion[] loadButtonSheet;
+    public int[] playerSpriteIndex={5,14,5};
     public ShapeRenderer shapeRenderer;
+
     public static String typewriter,dialogueMessage="";
     SpriteBatch batch;
     BitmapFont titleFont;
@@ -148,6 +155,14 @@ public class PrideParadox extends ApplicationAdapter {
 //            print(level.depth);
         }
     }
+    public static void drawPlayer(SpriteBatch batch,float stateTime){
+        playerFrame = playerAnimation.get(0).getKeyFrame(stateTime, true);
+        if(playerTurnLeft)player.rotate(-3);
+        if(playerTurnRight)player.rotate(3);
+        player.setRegion(playerFrame);
+        player.setOriginCenter();
+        player.draw(batch);
+    }
 
 
 
@@ -189,6 +204,23 @@ public class PrideParadox extends ApplicationAdapter {
         choiceBBounds=new Rectangle(1280-120-1280/3f,720/2f,1280/3f,100);
 
         loadButtonSheet=extractSprites("loadSheet.png",64,64);
+
+
+
+        playerSheet=new TextureRegion(new Texture(files("player.png")));
+        TextureRegion[][] totalFrames=playerSheet.split(32,32);
+        for(int frameCount : playerSpriteIndex) {
+            TextureRegion[] frames = new TextureRegion[frameCount];
+            int j=0;
+            for(int i=j;i<frameCount;i++){
+                frames[j]=totalFrames[0][i];
+                j++;
+            }
+            playerAnimation.add(new Animation<>(0.1f,frames));
+        }
+        player=new Sprite(playerAnimation.get(0).getKeyFrame(0));
+        player.setPosition(1280/2f,720/2f);
+        player.setOriginCenter();
 
         for(int i=0;i<3;i++){
             loadButtonArray.add(new LoadButton(200+i*400,i,75,loadButtonSheet));
@@ -234,7 +266,7 @@ public class PrideParadox extends ApplicationAdapter {
             case Play: {
                 if(fight){
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
-
+                    drawPlayer(batch,timeElapsed);
                 }
                 if(drawingDialogue){
                     currentLine = levels.get(currentLevel).get(storyLineIndex);
@@ -291,10 +323,8 @@ public class PrideParadox extends ApplicationAdapter {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.GREEN);
-        for(ArenaBounds bounds:arenaBounds){
-            shapeRenderer.rect(bounds.bounds.getX(),bounds.bounds.getY(),bounds.bounds.getWidth(),bounds.bounds.getHeight());
-        }
+
+
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -326,19 +356,22 @@ public class PrideParadox extends ApplicationAdapter {
         String name;
         public ArenaBounds(String name){
             switch(name){
-                case "up":{
-                    bounds=new Rectangle(640,50,50,50);
-                }break;
-                case "down":{
-                    bounds=new Rectangle(640,50,50,50);
-                }break;
                 case "left":{
-                    bounds=new Rectangle(640,50,50,50);
+                    bounds=new Rectangle(0,0,320,720);
                 }break;
                 case "right":{
-                    bounds=new Rectangle(640,50,50,50);
+                    bounds=new Rectangle(1280-320,0,320,720);
+                }break;
+                case "up":{
+                    bounds=new Rectangle(0,720-120,1280,120);
+                }break;
+                case "down":{
+                    bounds=new Rectangle(0,0,1280,120);
                 }break;
             }
+        }
+        public Rectangle getBounds(){
+            return bounds;
         }
     }
     public static class StoryLine {
@@ -494,6 +527,7 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
+
                     if(choiceMode){
                         if(buttonCode==13){
                             choice=choiceState.A;
@@ -536,6 +570,7 @@ public class PrideParadox extends ApplicationAdapter {
                             if (menuButtonActiveIndex < 3) menuButtonActiveIndex++;
                             else controller.startVibration(300, 0.5f);
                         }
+
                     }
                 }
                 break;
@@ -552,17 +587,33 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
-                    if(axisCode==0){
-                        if ((MathUtils.floor(value) == -1)) {
-                            choice=choiceState.A;
-                        }
-                        if ((MathUtils.floor(value) == 1)) {
-                            choice=choiceState.B;
+                    if(fight){
+                        if(axisCode==0){
+                            if (MathUtils.floor(value) == -1) {
+                                playerTurnLeft = false;
+                                playerTurnRight = true;
+                            }
+                            if (MathUtils.floor(value) == 1) {
+                                playerTurnRight = false;
+                                playerTurnLeft = true;
+                            }
+                            if (MathUtils.floor(value) == 0) {
+                                playerTurnRight = false;
+                                playerTurnLeft = false;
+                            }
                         }
                     }
+                        if(axisCode==0&&drawingDialogue){
+                            if ((MathUtils.floor(value) == -1)) {
+                                choice=choiceState.A;
+                            }
+                            if ((MathUtils.floor(value) == 1)) {
+                                choice=choiceState.B;
+                            }
+                        }
                 }
             }
-//            Gdx.app.log("Controller", "axis moved: " + axisCode + " value: " + value);
+            Gdx.app.log("Controller", "axis moved: " + axisCode + " value: " + value);
             return false;
         }
     }
@@ -586,7 +637,7 @@ public class PrideParadox extends ApplicationAdapter {
                     if ((keycode == Input.Keys.UP||keycode == Input.Keys.W) && menuButtonActiveIndex > 0) {
                         menuButtonActiveIndex--;
                     }
-                    if ((keycode == Input.Keys.DOWN||keycode == Input.Keys.W) && menuButtonActiveIndex < 3) {
+                    if ((keycode == Input.Keys.DOWN||keycode == Input.Keys.W) && menuButtonActiveIndex < 2) {
                         menuButtonActiveIndex++;
                     }
                     if (keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE) {
