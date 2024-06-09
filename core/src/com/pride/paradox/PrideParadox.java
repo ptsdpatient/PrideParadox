@@ -44,12 +44,13 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f,playerRotation=0;
+    public static float shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0;
-    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false;
+    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
+    public static Array<Projecticle> projectileList=new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
     public Viewport viewport;
@@ -159,6 +160,17 @@ public class PrideParadox extends ApplicationAdapter {
         playerFrame = playerAnimation.get(0).getKeyFrame(stateTime, true);
         if(playerTurnLeft)player.rotate(-3);
         if(playerTurnRight)player.rotate(3);
+        shootTimeOut+=Gdx.graphics.getDeltaTime();
+        if(fireProjectile && (shootTimeOut>0.4)){
+            shootTimeOut=0;
+            projectileList.add(new Projecticle(player.getX(),player.getY(),player.getRotation()));
+        }
+        if(playerForward||playerBackward){
+            float radians=MathUtils.degreesToRadians*(player.getRotation()+90);
+            float amplitude=playerForward?-2:2;
+            player.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
+
+        }
         player.setRegion(playerFrame);
         player.setOriginCenter();
         player.draw(batch);
@@ -267,6 +279,9 @@ public class PrideParadox extends ApplicationAdapter {
                 if(fight){
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
                     drawPlayer(batch,timeElapsed);
+                    for(Projecticle proj : projectileList){
+                        proj.render(batch);
+                    }
                 }
                 if(drawingDialogue){
                     currentLine = levels.get(currentLevel).get(storyLineIndex);
@@ -372,6 +387,23 @@ public class PrideParadox extends ApplicationAdapter {
         }
         public Rectangle getBounds(){
             return bounds;
+        }
+    }
+    public static class Projecticle{
+        public Sprite obj;
+        public float x,y,rotation;
+        public Projecticle(float x,float y,float rotation){
+            this.obj=new Sprite(new Texture(files("fire.png")));
+            this.obj.setPosition(x,y);
+            this.x=x;
+            this.y=y;
+            this.obj.setRotation(rotation);
+        }
+        public void render(SpriteBatch sb){
+            float radians=MathUtils.degreesToRadians*(rotation+90);
+            float amplitude=2;
+            obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
+            obj.draw(sb);
         }
     }
     public static class StoryLine {
@@ -588,6 +620,9 @@ public class PrideParadox extends ApplicationAdapter {
                 }break;
                 case Play:{
                     if(fight){
+                        if(axisCode==5){
+                            fireProjectile=MathUtils.floor(value) == 1;
+                        }
                         if(axisCode==0){
                             if (MathUtils.floor(value) == -1) {
                                 playerTurnLeft = false;
@@ -600,6 +635,20 @@ public class PrideParadox extends ApplicationAdapter {
                             if (MathUtils.floor(value) == 0) {
                                 playerTurnRight = false;
                                 playerTurnLeft = false;
+                            }
+                        }
+                        if(axisCode==3){
+                            if (MathUtils.floor(value) == -1) {
+                                playerBackward=true;
+                                playerForward=false;
+                            }
+                            if (MathUtils.floor(value) == 1) {
+                                playerBackward=false;
+                                playerForward=true;
+                            }
+                            if (MathUtils.floor(value) == 0) {
+                                playerBackward=false;
+                                playerForward=false;
                             }
                         }
                     }
