@@ -42,7 +42,7 @@ public class PrideParadox extends ApplicationAdapter {
     public BitmapFont dialogueFont,choiceFont;
     public static float timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0;
-    public static Boolean controllerConnected = false,drawingDialogue=true,drawingText=true,lineSkip=false,choiceMode=false;
+    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
@@ -135,7 +135,7 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void storyInitialize(){
         levels.add(new Array<StoryLine>());
-        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator")),new StoryLine("Male","1.",new StoryLine("you selected male","narrator"))));
+        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator"))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator"))));
         levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe")))));
         levels.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe")))));
 
