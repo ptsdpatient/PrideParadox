@@ -2,6 +2,7 @@ package com.pride.paradox;
 
 import static com.pride.paradox.Print.print;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -34,6 +35,8 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import org.w3c.dom.css.Rect;
+
+import java.util.Objects;
 
 
 public class PrideParadox extends ApplicationAdapter {
@@ -206,6 +209,8 @@ public class PrideParadox extends ApplicationAdapter {
         input = new InputProcessor();
         Gdx.input.setInputProcessor(input);
         Controllers.addListener(new controllerInput());
+        mouseControlActive=(Gdx.app.getType()!=Application.ApplicationType.Android)&&(Gdx.app.getType()!=Application.ApplicationType.iOS);
+
 
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(1280, 720, camera);
@@ -316,10 +321,9 @@ public class PrideParadox extends ApplicationAdapter {
                                 projectileList.removeValue(proj,true);
                             }
                     }
-                    for(MobileButton btn : mobileButtonList){
+                    if(!mouseControlActive)for(MobileButton btn : mobileButtonList){
                         btn.render(batch);
                     }
-
                 }
                 if(drawingDialogue){
                     currentLine = levels.get(currentLevel).get(storyLineIndex);
@@ -930,6 +934,9 @@ public class PrideParadox extends ApplicationAdapter {
 
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+            touch = new Vector3(screenX, screenY, 0);
+            camera.unproject(touch);
+            point = new Vector2(touch.x, touch.y);
                 switch(gameState){
                     case Play :{
                         if(fight){
@@ -943,6 +950,30 @@ public class PrideParadox extends ApplicationAdapter {
                                     playerBackward=true;
                                 }
                             }
+                            if(!mouseControlActive){
+                               for(MobileButton btn:mobileButtonList){
+                                   if(btn.button.getBoundingRectangle().contains(point)) {
+                                       btn.active = btn.button.getBoundingRectangle().contains(point);
+                                       switch (btn.name) {
+                                           case "forward": {
+                                               playerBackward = true;
+                                           }
+                                           break;
+                                           case "backward": {
+                                               playerForward = true;
+                                           }
+                                           break;
+                                           case "fire": {
+                                               fireKey = true;
+                                               playerTime = 0;
+                                               fireProjectile = true;
+                                           }
+                                           break;
+                                       }
+                                   }
+                               }
+                            }
+
                         }
                     }break;
                 }
@@ -974,6 +1005,18 @@ public class PrideParadox extends ApplicationAdapter {
                             mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
                             camera.unproject(mousePos);
                             player.setRotation((float) (MathUtils.radiansToDegrees * Math.atan2(mousePos.y - player.getY() - player.getOriginY(), mousePos.x - player.getX() - player.getOriginX()) - 90));
+                        }
+                        if(!mouseControlActive){
+
+                            for(MobileButton button : mobileButtonList){
+                                if(button.button.getBoundingRectangle().contains(point)){
+
+                                    if(Objects.equals(button.name, "icon") ){
+                                        player.setRotation((float) (MathUtils.radiansToDegrees * Math.atan2(point.y - button.y - button.button.getOriginY(), point.x - button.x - button.button.getOriginX()) - 90));
+                                        button.button.setPosition(point.x-button.button.getRegionWidth()/2f,point.y-button.button.getRegionHeight()/2f);
+                                    }
+                                }
+                            }
                         }
                     }
                     if(choiceMode) {
@@ -1024,6 +1067,33 @@ public class PrideParadox extends ApplicationAdapter {
                             }
                             if (button == Input.Buttons.RIGHT) {
                                 playerBackward = false;
+                            }
+                        }
+                        if(!mouseControlActive){
+                            for(MobileButton btn:mobileButtonList){
+                                if(btn.button.getBoundingRectangle().contains(point)) {
+                                    switch (btn.name) {
+                                        case "forward": {
+                                            btn.active = false;
+                                            playerBackward = false;
+                                        }
+                                        break;
+                                        case "backward": {
+                                            btn.active = false;
+                                            playerForward = false;
+                                        }
+                                        break;
+                                        case "fire": {
+                                            btn.active = false;
+                                            fireKey = false;
+                                        }
+                                        break;
+                                        case "icon": {
+                                            btn.active = false;
+                                            btn.button.setPosition(btn.x,btn.y);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
