@@ -44,13 +44,13 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
-    public static int menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0;
-    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false;
+    public static float playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static int frameIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
+    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
-    public static Array<Projecticle> projectileList=new Array<>();
+    public static Array<Projectile> projectileList=new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
     public Viewport viewport;
@@ -60,7 +60,7 @@ public class PrideParadox extends ApplicationAdapter {
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
     public TextureRegion[] loadButtonSheet;
-    public int[] playerSpriteIndex={5,14,5};
+
     public ShapeRenderer shapeRenderer;
 
     public static String typewriter,dialogueMessage="";
@@ -156,23 +156,41 @@ public class PrideParadox extends ApplicationAdapter {
 //            print(level.depth);
         }
     }
-    public static void drawPlayer(SpriteBatch batch,float stateTime){
-        playerFrame = playerAnimation.get(0).getKeyFrame(stateTime, true);
+    public static void drawPlayer(SpriteBatch batch){
+        frameIndex = (int) (playerTime / playerFPS) % playerAnimation.get(playerAnimationId).getKeyFrames().length;
+        playerFrame = playerAnimation.get(playerAnimationId).getKeyFrames()[frameIndex];
+        playerTime+=Gdx.graphics.getDeltaTime();
         if(playerTurnLeft)player.rotate(-3);
         if(playerTurnRight)player.rotate(3);
         shootTimeOut+=Gdx.graphics.getDeltaTime();
-        if(fireProjectile && (shootTimeOut>0.4)){
-            shootTimeOut=0;
-            projectileList.add(new Projecticle(player.getX(),player.getY(),player.getRotation()));
+
+        if(fireProjectile){
+            if(frameIndex==7 && shootTimeOut>0.05) {
+                projectileList.add(new Projectile(player.getX(),player.getY(),player.getRotation()));
+                shootTimeOut=0;
+            }
+            if(playerAnimationId!=1){
+                playerAnimationId=1;
+                playerFPS=0.04f;
+            }
+            if(!fireKey&&frameIndex>11){
+                fireProjectile=false;
+                playerTime=0;
+            }
+        }else{
+            if(playerAnimationId==1){
+                playerAnimationId=0;
+            }
         }
         if(playerForward||playerBackward){
             float radians=MathUtils.degreesToRadians*(player.getRotation()+90);
-            float amplitude=playerForward?-2:2;
+            float amplitude=2.4f*(playerForward?-1:1);
             player.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
 
         }
         player.setRegion(playerFrame);
-        player.setOriginCenter();
+        player.setSize(playerFrame.getRegionWidth(), playerFrame.getRegionHeight());
+        player.setOrigin(player.getWidth() / 2, player.getHeight() / 2);
         player.draw(batch);
     }
 
@@ -217,19 +235,21 @@ public class PrideParadox extends ApplicationAdapter {
 
         loadButtonSheet=extractSprites("loadSheet.png",64,64);
 
-
-
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
-        for(int frameCount : playerSpriteIndex) {
+
+        int[] playerSpriteIndex = {5, 14, 5};
+        int startIndex = 0;
+        for (int frameCount : playerSpriteIndex) {
             TextureRegion[] frames = new TextureRegion[frameCount];
-            int j=0;
-            for(int i=j;i<frameCount;i++){
-                frames[j]=totalFrames[0][i];
-                j++;
+            for (int i = 0; i < frameCount; i++) {
+                frames[i] = totalFrames[0][startIndex + i];
             }
-            playerAnimation.add(new Animation<>(0.1f,frames));
+            startIndex += frameCount;
+            playerAnimation.add(new Animation<>(0.1f, frames));
         }
+
+
         player=new Sprite(playerAnimation.get(0).getKeyFrame(0));
         player.setPosition(1280/2f,720/2f);
         player.setOriginCenter();
@@ -278,9 +298,13 @@ public class PrideParadox extends ApplicationAdapter {
             case Play: {
                 if(fight){
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
-                    drawPlayer(batch,timeElapsed);
-                    for(Projecticle proj : projectileList){
+                    drawPlayer(batch);
+                    for(Projectile proj : projectileList){
                         proj.render(batch);
+                        for(ArenaBounds bounds : arenaBounds)
+                            if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
+                                projectileList.removeValue(proj,true);
+                            }
                     }
                 }
                 if(drawingDialogue){
@@ -314,8 +338,6 @@ public class PrideParadox extends ApplicationAdapter {
 //                        print(i+","+lineDepth+" : "+currentLine.message);
                     }
 
-
-
                     drawText(batch,currentLine);
                 }
             }break;
@@ -331,7 +353,6 @@ public class PrideParadox extends ApplicationAdapter {
         if (controllerConnected && controllerConectTime < 3f) {
             batch.draw(gamepadConnect, 1100, 620);
             controllerConectTime += Gdx.graphics.getDeltaTime();
-
         }
 
         batch.end();
@@ -389,19 +410,22 @@ public class PrideParadox extends ApplicationAdapter {
             return bounds;
         }
     }
-    public static class Projecticle{
+    public static class Projectile{
         public Sprite obj;
-        public float x,y,rotation;
-        public Projecticle(float x,float y,float rotation){
-            this.obj=new Sprite(new Texture(files("fire.png")));
+        public float x,y,rotation,amplitude=5,radians;
+        public Projectile(float x,float y,float rotation){
+            this.obj=new Sprite();
             this.obj.setPosition(x,y);
             this.x=x;
             this.y=y;
+            this.rotation=rotation;
             this.obj.setRotation(rotation);
+            obj.setRegion(new TextureRegion(new Texture(files("fire.png"))));
+            obj.setSize(obj.getRegionWidth(), obj.getRegionHeight());
+            obj.setOrigin(obj.getWidth() / 2, obj.getHeight() / 2);
+            this.radians=MathUtils.degreesToRadians*(rotation+90);
         }
         public void render(SpriteBatch sb){
-            float radians=MathUtils.degreesToRadians*(rotation+90);
-            float amplitude=2;
             obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             obj.draw(sb);
         }
@@ -621,7 +645,11 @@ public class PrideParadox extends ApplicationAdapter {
                 case Play:{
                     if(fight){
                         if(axisCode==5){
-                            fireProjectile=MathUtils.floor(value) == 1;
+                            fireKey=(MathUtils.floor(value) == 1);
+                            if(fireKey){
+                                playerTime=0;
+                                fireProjectile=true;
+                            }
                         }
                         if(axisCode==0){
                             if (MathUtils.floor(value) == -1) {
