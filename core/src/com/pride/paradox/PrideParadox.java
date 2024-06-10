@@ -51,6 +51,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
     public static Array<Projectile> projectileList=new Array<>();
+    public static Array<MobileButton> mobileButtonList = new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
     public Viewport viewport;
@@ -59,7 +60,7 @@ public class PrideParadox extends ApplicationAdapter {
     public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
-    public TextureRegion[] loadButtonSheet;
+    public TextureRegion[] loadButtonSheet,mobileButtonSheet;
 
     public ShapeRenderer shapeRenderer;
 
@@ -68,6 +69,7 @@ public class PrideParadox extends ApplicationAdapter {
     BitmapFont titleFont;
     GlyphLayout layout;
     String[] menuButtonNames = {"START", "HOW TO PLAY?", "EXIT"};
+    String[] mobileButtonNames={"look","icon","fire","forward","backward"};
     String[] arenaBoundNames={"up","down","left","right"};
     public static Array<ArenaBounds> arenaBounds=new Array<>();
     public enum GameState {Menu, Load, Save, Pause, Play, Instructions}
@@ -234,6 +236,7 @@ public class PrideParadox extends ApplicationAdapter {
         choiceBBounds=new Rectangle(1280-120-1280/3f,720/2f,1280/3f,100);
 
         loadButtonSheet=extractSprites("loadSheet.png",64,64);
+        mobileButtonSheet=extractSprites("buttons.png",64,64);
 
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
@@ -263,6 +266,13 @@ public class PrideParadox extends ApplicationAdapter {
             menuButtonArray.add(new MenuButton(190 - index * 70, name, index));
             index++;
         }
+
+        index=0;
+        for(String name :mobileButtonNames){
+            mobileButtonList.add(new MobileButton(name,mobileButtonSheet,index));
+            index++;
+        }
+
         storyInitialize();
     }
 
@@ -306,6 +316,10 @@ public class PrideParadox extends ApplicationAdapter {
                                 projectileList.removeValue(proj,true);
                             }
                     }
+                    for(MobileButton btn : mobileButtonList){
+                        btn.render(batch);
+                    }
+
                 }
                 if(drawingDialogue){
                     currentLine = levels.get(currentLevel).get(storyLineIndex);
@@ -391,6 +405,7 @@ public class PrideParadox extends ApplicationAdapter {
         Rectangle bounds;
         String name;
         public ArenaBounds(String name){
+            this.name=name;
             switch(name){
                 case "left":{
                     bounds=new Rectangle(0,0,320,720);
@@ -484,9 +499,44 @@ public class PrideParadox extends ApplicationAdapter {
             font.setColor(1,1,1,(index==loadButtonIndex)?alpha:1);
             object.setAlpha(index == loadButtonIndex ? alpha : 1);
         }
-
-
     }
+
+    public static class MobileButton{
+        public String name;
+        public int index;
+        public float x,y;
+        public Sprite button;
+        public MobileButton(String name,TextureRegion[] texture,int index){
+            this.button=new Sprite(texture[Math.min(index, 3)]);
+            this.index=index;
+            switch(name){
+                case "look":{
+                    this.button.setPosition(120,120);
+                }
+                case "icon":{
+                    this.button.setPosition(120,120);
+                }break;
+                case "fire":{
+                    this.button.setPosition(1280-160,720-140);
+                }break;
+                case "forward":{
+                    this.button.setPosition(1280-160,230);
+                }break;
+                case "backward":{
+                    this.button.setRegion(texture[3]);
+                    this.button.setPosition(1280-160,50);
+                    this.button.flip(false,true);
+                }break;
+            }
+            this.button.setOriginCenter();
+            this.button.setScale(4f);
+            this.name=name;
+        }
+        public void render(SpriteBatch batch){
+            button.draw(batch);
+        }
+    }
+
     public static class MenuButton {
         public final String name;
         public int index;
@@ -644,19 +694,20 @@ public class PrideParadox extends ApplicationAdapter {
                 }break;
                 case Play:{
                     if(fight){
+//                        print(MathUtils.floor(value));
                         if(axisCode==5){
-                            fireKey=(MathUtils.floor(value) == 1);
+                            fireKey=(MathUtils.floor(value) >0.5);
                             if(fireKey){
                                 playerTime=0;
                                 fireProjectile=true;
                             }
                         }
                         if(axisCode==0){
-                            if (MathUtils.floor(value) == -1) {
+                            if (MathUtils.floor(value) < -0.5) {
                                 playerTurnLeft = false;
                                 playerTurnRight = true;
                             }
-                            if (MathUtils.floor(value) == 1) {
+                            if (MathUtils.floor(value) > 0.5) {
                                 playerTurnRight = false;
                                 playerTurnLeft = true;
                             }
@@ -666,11 +717,11 @@ public class PrideParadox extends ApplicationAdapter {
                             }
                         }
                         if(axisCode==3){
-                            if (MathUtils.floor(value) == -1) {
+                            if (MathUtils.floor(value) < -0.5) {
                                 playerBackward=true;
                                 playerForward=false;
                             }
-                            if (MathUtils.floor(value) == 1) {
+                            if (MathUtils.floor(value) >0.5) {
                                 playerBackward=false;
                                 playerForward=true;
                             }
@@ -681,10 +732,10 @@ public class PrideParadox extends ApplicationAdapter {
                         }
                     }
                         if(axisCode==0&&drawingDialogue){
-                            if ((MathUtils.floor(value) == -1)) {
+                            if ((MathUtils.floor(value) <-0.5)) {
                                 choice=choiceState.A;
                             }
-                            if ((MathUtils.floor(value) == 1)) {
+                            if ((MathUtils.floor(value) > 0.5)) {
                                 choice=choiceState.B;
                             }
                         }
