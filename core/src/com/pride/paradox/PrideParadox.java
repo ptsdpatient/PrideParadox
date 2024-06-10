@@ -38,7 +38,7 @@ import org.w3c.dom.css.Rect;
 
 public class PrideParadox extends ApplicationAdapter {
     public static GameState gameState = GameState.Menu;
-    public static Vector3 touch;
+    public static Vector3 touch,mousePos;
     public static Vector2 point;
     public static Sprite player;
     public static OrthographicCamera camera;
@@ -46,7 +46,7 @@ public class PrideParadox extends ApplicationAdapter {
     public BitmapFont dialogueFont,choiceFont;
     public static float playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int frameIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
-    public static Boolean controllerConnected = false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
+    public static Boolean  mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
@@ -241,9 +241,9 @@ public class PrideParadox extends ApplicationAdapter {
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
 
-        int[] playerSpriteIndex = {5, 14, 5};
+        int[] playerIndex = {5, 14, 5};
         int startIndex = 0;
-        for (int frameCount : playerSpriteIndex) {
+        for (int frameCount : playerIndex) {
             TextureRegion[] frames = new TextureRegion[frameCount];
             for (int i = 0; i < frameCount; i++) {
                 frames[i] = totalFrames[0][startIndex + i];
@@ -427,7 +427,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
     public static class Projectile{
         public Sprite obj;
-        public float x,y,rotation,amplitude=5,radians;
+        public float x,y,rotation,amplitude=5,radians,time=0;
         public Projectile(float x,float y,float rotation){
             this.obj=new Sprite();
             this.obj.setPosition(x,y);
@@ -441,6 +441,11 @@ public class PrideParadox extends ApplicationAdapter {
             this.radians=MathUtils.degreesToRadians*(rotation+90);
         }
         public void render(SpriteBatch sb){
+            time+=Gdx.graphics.getDeltaTime();
+            if(time>0.05f){
+                time=0;
+                obj.scale(0.025f);
+            }
             obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             obj.draw(sb);
         }
@@ -502,6 +507,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static class MobileButton{
+        public Boolean active=false;
         public String name;
         public int index;
         public float x,y;
@@ -900,11 +906,20 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
-                    if(choiceABounds.contains(point)){
-                        choice=choiceState.A;
+                    if(fight){
+                        if(mouseControlActive) {
+                            mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+                            camera.unproject(mousePos);
+                            player.setRotation((float) (MathUtils.radiansToDegrees * Math.atan2(mousePos.y - player.getY() - player.getOriginY(), mousePos.x - player.getX() - player.getOriginX()) - 90));
+                        }
                     }
-                    if(choiceBBounds.contains(point)){
-                        choice=choiceState.B;
+                    if(choiceMode) {
+                        if (choiceABounds.contains(point)) {
+                            choice = choiceState.A;
+                        }
+                        if (choiceBBounds.contains(point)) {
+                            choice = choiceState.B;
+                        }
                     }
                 }break;
             }
@@ -915,7 +930,22 @@ public class PrideParadox extends ApplicationAdapter {
 
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-
+                switch(gameState){
+                    case Play :{
+                        if(fight){
+                            if(mouseControlActive){
+                                if(button==Input.Buttons.LEFT) {
+                                    fireKey = true;
+                                    playerTime = 0;
+                                    fireProjectile = true;
+                                }
+                                if(button==Input.Buttons.RIGHT){
+                                    playerBackward=true;
+                                }
+                            }
+                        }
+                    }break;
+                }
             return true;
         }
         @Override
@@ -939,11 +969,20 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
-                    if(choiceABounds.contains(point)){
-                        choice=choiceState.A;
+                    if(fight){
+                        if(mouseControlActive) {
+                            mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+                            camera.unproject(mousePos);
+                            player.setRotation((float) (MathUtils.radiansToDegrees * Math.atan2(mousePos.y - player.getY() - player.getOriginY(), mousePos.x - player.getX() - player.getOriginX()) - 90));
+                        }
                     }
-                    if(choiceBBounds.contains(point)){
-                        choice=choiceState.B;
+                    if(choiceMode) {
+                        if (choiceABounds.contains(point)) {
+                            choice = choiceState.A;
+                        }
+                        if (choiceBBounds.contains(point)) {
+                            choice = choiceState.B;
+                        }
                     }
                 }break;
             }
@@ -978,6 +1017,16 @@ public class PrideParadox extends ApplicationAdapter {
                     if(exit)gameState=GameState.Menu;
                 }break;
                 case Play:{
+                    if(fight){
+                        if(mouseControlActive) {
+                            if (button == Input.Buttons.LEFT) {
+                                fireKey = false;
+                            }
+                            if (button == Input.Buttons.RIGHT) {
+                                playerBackward = false;
+                            }
+                        }
+                    }
                     if(choiceMode){
                         if(choiceABounds.contains(point)){
                             levels.get(currentLevel).get(storyLineIndex).choice= StoryLine.choiceState.A;
