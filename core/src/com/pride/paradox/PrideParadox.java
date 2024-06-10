@@ -173,7 +173,7 @@ public class PrideParadox extends ApplicationAdapter {
             }
             if(playerAnimationId!=1){
                 playerAnimationId=1;
-                playerFPS=0.04f;
+                playerFPS=0.02f;
             }
             if(!fireKey&&frameIndex>11){
                 fireProjectile=false;
@@ -512,20 +512,30 @@ public class PrideParadox extends ApplicationAdapter {
             switch(name){
                 case "look":{
                     this.button.setPosition(120,120);
+                    this.x=120;
+                    this.y=120;
                 }
                 case "icon":{
                     this.button.setPosition(120,120);
+                    this.x=120;
+                    this.y=120;
                 }break;
                 case "fire":{
                     this.button.setPosition(1280-160,720-140);
+                    this.x=1280-160;
+                    this.y=720-140;
                 }break;
                 case "forward":{
                     this.button.setPosition(1280-160,230);
+                    this.x=1280-160;
+                    this.y=230;
                 }break;
                 case "backward":{
                     this.button.setRegion(texture[3]);
                     this.button.setPosition(1280-160,50);
                     this.button.flip(false,true);
+                    this.x=1280-160;
+                    this.y=50;
                 }break;
             }
             this.button.setOriginCenter();
@@ -583,6 +593,18 @@ public class PrideParadox extends ApplicationAdapter {
 
         @Override
         public boolean buttonDown(Controller controller, int buttonCode) {
+            switch(gameState){
+                case Play :{
+                    if(fight){
+                        if(buttonCode==0){
+                            fireKey=true;
+                            playerTime=0;
+                            fireProjectile=true;
+                        }
+                    }
+                }break;
+
+            }
 //            Gdx.app.log("Controller", "button down: " + buttonCode);
             return false;
         }
@@ -633,7 +655,11 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
-
+                    if(fight){
+                        if(buttonCode==0){
+                            fireKey=false;
+                        }
+                    }
                     if(choiceMode){
                         if(buttonCode==13){
                             choice=choiceState.A;
@@ -753,7 +779,29 @@ public class PrideParadox extends ApplicationAdapter {
 
         @Override
         public boolean keyDown(int keycode) {
-
+                switch (gameState){
+                    case Play:{
+                        if(fight){
+                            if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) ){
+                                playerTurnRight=true;
+                            }
+                            if((keycode==Input.Keys.D||keycode==Input.Keys.RIGHT)){
+                                playerTurnLeft=true;
+                            }
+                            if((keycode==Input.Keys.W||keycode==Input.Keys.UP)){
+                                playerBackward=true;
+                            }
+                            if((keycode==Input.Keys.S||keycode==Input.Keys.DOWN)){
+                                playerForward=true;
+                            }
+                            if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
+                                fireKey=true;
+                                playerTime=0;
+                                fireProjectile=true;
+                            }
+                        }
+                    }break;
+                }
             return true;
         }
 
@@ -785,6 +833,23 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }break;
                 case Play:{
+                    if(fight){
+                        if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) ){
+                            playerTurnRight=false;
+                        }
+                        if((keycode==Input.Keys.D||keycode==Input.Keys.RIGHT)){
+                            playerTurnLeft=false;
+                        }
+                        if((keycode==Input.Keys.W||keycode==Input.Keys.UP)){
+                            playerBackward=false;
+                        }
+                        if((keycode==Input.Keys.S||keycode==Input.Keys.DOWN)){
+                            playerForward=false;
+                        }
+                        if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
+                            fireKey=false;
+                        }
+                    }
                     if (choiceMode) {
                         if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) ){
                             choice=choiceState.A;
