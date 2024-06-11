@@ -49,8 +49,8 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
-    public static int frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
+    public static float health=100,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static int kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
     public static Boolean gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<PauseButton> pauseButtons=new Array<>();
@@ -73,7 +73,7 @@ public class PrideParadox extends ApplicationAdapter {
     SpriteBatch batch;
     BitmapFont titleFont;
     GlyphLayout layout;
-    String[] menuButtonNames = {"START", "HOW TO PLAY?", "EXIT"};
+    static String[] menuButtonNames = {"START", "HOW TO PLAY?","GAME RESET" ,"EXIT"};
     static String[] pauseButtonNames={"RESUME","SAVE","HOW TO PLAY?","MENU","QUIT"};
     String[] mobileButtonNames={"look","icon","fire","forward","backward"};
     String[] arenaBoundNames={"up","down","left","right"};
@@ -81,10 +81,16 @@ public class PrideParadox extends ApplicationAdapter {
     public enum GameState {Menu, Load, Pause, Play, Instructions}
     public enum choiceState{A,B}
     static choiceState choice=choiceState.A;
-    Preferences[] gameSaves=new Preferences[3];
+    public static Preferences[] gameSaves=new Preferences[3];
 
     public static FileHandle files(String input){
         return Gdx.files.internal(input);
+    }
+
+    public static void loadGame(int saveIndex){
+        currentLevel=gameSaves[saveIndex].getInteger("level",0);
+        health=gameSaves[saveIndex].getFloat("health",100);
+        kills=gameSaves[saveIndex].getInteger("kills",0);
     }
     public void drawChoice(SpriteBatch batch,StoryLine line){
         float alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
@@ -137,8 +143,11 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
 
-    public static void saveGame(int state){
-
+    public static void saveGame(int saveIndex){
+        gameSaves[saveIndex].putInteger("level",currentLevel);
+        gameSaves[saveIndex].putFloat("health",health);
+        gameSaves[saveIndex].putInteger("kills",kills);
+        gameSaves[saveIndex].flush();
     }
     public static void handlePause(){
         switch (pauseButtonActiveIndex) {
@@ -175,13 +184,20 @@ public class PrideParadox extends ApplicationAdapter {
                 gameStarted=false;
             }
             break;
-            case 2: {
+            case 2:{
+                clearProgress();
+            }break;
+            case 3: {
                 Gdx.app.exit();
             }break;
         }
     }
     public static Boolean checkExitKey(int keycode){
         return keycode==Input.Keys.X ||keycode==Input.Keys.ESCAPE || keycode==Input.Keys.CONTROL_RIGHT;
+    }
+
+    public static void clearProgress(){
+        for(Preferences prefs : gameSaves)prefs.clear();
     }
 
     public static TextureRegion[] extractSprites(String name,int width,int height){
@@ -254,7 +270,6 @@ public class PrideParadox extends ApplicationAdapter {
         Controllers.addListener(new controllerInput());
         mouseControlActive=(Gdx.app.getType()!=Application.ApplicationType.Android)&&(Gdx.app.getType()!=Application.ApplicationType.iOS);
 
-
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(1280, 720, camera);
         camera.setToOrtho(false, 1280, 720);
@@ -310,18 +325,20 @@ public class PrideParadox extends ApplicationAdapter {
 
         for(int i=0;i<3;i++){
             gameSaves[i]=Gdx.app.getPreferences("saves_"+i);
-            loadButtonArray.add(new LoadButton(200+i*400,i,75,loadButtonSheet,gameSaves[i]));
+            loadButtonArray.add(new LoadButton(200+i*400,i,loadButtonSheet,gameSaves[i]));
         }
+
+
 
         int index = 0;
         for (String name : menuButtonNames) {
-            menuButtonArray.add(new MenuButton(190 - index * 70, name, index));
+            menuButtonArray.add(new MenuButton(270 - index * 70, name, index));
             index++;
         }
 
         index=0;
         for(String name : pauseButtonNames){
-            pauseButtons.add(new PauseButton(570-index*90,name,index));
+            pauseButtons.add(new PauseButton(520-index*90,name,index));
             index++;
         }
 
@@ -577,11 +594,11 @@ public class PrideParadox extends ApplicationAdapter {
         public int level;
         public int kills;
         public float health;
-        public LoadButton(float x, int index, float progress, TextureRegion[] buttonSheet,Preferences save){
+        public LoadButton(float x, int index, TextureRegion[] buttonSheet,Preferences save){
             this.x=x;
             this.level=save.getInteger("level",0);
             this.kills=save.getInteger("klls",0);
-            this.health=save.getInteger("health",100);
+            this.health=save.getFloat("health",100);
             this.progress=level*100/6f;
             this.index=index;
             this.font=new BitmapFont(files("joystix.fnt"));
@@ -767,7 +784,7 @@ public class PrideParadox extends ApplicationAdapter {
 
                     }
                     if (buttonCode == 12) {
-                        if (menuButtonActiveIndex < 2) menuButtonActiveIndex++;
+                        if (menuButtonActiveIndex < menuButtonNames.length-1) menuButtonActiveIndex++;
                         else controller.startVibration(300, 0.5f);
                     }
                     if (buttonCode == 0) {
@@ -791,6 +808,9 @@ public class PrideParadox extends ApplicationAdapter {
                         if(buttonCode==0){
                             handlePause();
                         }
+                        if(buttonCode==3||buttonCode==4){
+                            gameState=GameState.Play;
+                        }
                 }break;
 
                 case Load:{
@@ -807,6 +827,8 @@ public class PrideParadox extends ApplicationAdapter {
 //                        controller.startVibration(200, 0.7f);
                     }
                     if(buttonCode==0){
+                        saveIndex=loadButtonIndex;
+                        loadGame(saveIndex);
                         gameStarted=true;
                         gameState=GameState.Play;
                         drawTextTime=10f;
@@ -884,7 +906,7 @@ public class PrideParadox extends ApplicationAdapter {
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (menuButtonActiveIndex < 2) menuButtonActiveIndex++;
+                            if (menuButtonActiveIndex < menuButtonNames.length-1) menuButtonActiveIndex++;
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -1009,7 +1031,7 @@ public class PrideParadox extends ApplicationAdapter {
                     if ((keycode == Input.Keys.UP||keycode == Input.Keys.W) && menuButtonActiveIndex > 0) {
                         menuButtonActiveIndex--;
                     }
-                    if ((keycode == Input.Keys.DOWN||keycode == Input.Keys.W) && menuButtonActiveIndex < 2) {
+                    if ((keycode == Input.Keys.DOWN||keycode == Input.Keys.W) && menuButtonActiveIndex < menuButtonNames.length-1) {
                         menuButtonActiveIndex++;
                     }
                     if (keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE) {
@@ -1023,6 +1045,9 @@ public class PrideParadox extends ApplicationAdapter {
                         if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
                             handlePause();
                         }
+                    if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
+                        gameState=GameState.Play;
+                    }
                 }break;
 
                 case Load:{
@@ -1032,10 +1057,16 @@ public class PrideParadox extends ApplicationAdapter {
                     if((keycode==Input.Keys.D||keycode==Input.Keys.RIGHT) && loadButtonIndex<2){
                         loadButtonIndex++;
                     }
+
                     if (keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE) {
+                        saveIndex=loadButtonIndex;
+                        loadGame(saveIndex);
                         gameStarted=true;
                         gameState=GameState.Play;
                         drawTextTime=10f;
+                    }
+                    if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
+                        gameState=GameState.Menu;
                     }
                 }break;
                 case Play:{
@@ -1269,6 +1300,8 @@ public class PrideParadox extends ApplicationAdapter {
                     boolean exit=true;
                     for(LoadButton btn: loadButtonArray){
                         if(btn.object.getBoundingRectangle().contains(point)){
+                            saveIndex=loadButtonIndex;
+                            loadGame(saveIndex);
                             gameStarted=true;
                             gameState=GameState.Play;
                             drawTextTime=10f;
@@ -1290,29 +1323,27 @@ public class PrideParadox extends ApplicationAdapter {
                         }
                         if(!mouseControlActive){
                             for(MobileButton btn:mobileButtonList){
-                                if(btn.button.getBoundingRectangle().contains(point)) {
+                                btn.active = false;
+
                                     switch (btn.name) {
                                         case "forward": {
-                                            btn.active = false;
                                             playerBackward = false;
                                         }
                                         break;
                                         case "backward": {
-                                            btn.active = false;
                                             playerForward = false;
                                         }
                                         break;
                                         case "fire": {
-                                            btn.active = false;
                                             fireKey = false;
                                         }
                                         break;
                                         case "icon": {
-                                            btn.active = false;
+
                                             btn.button.setPosition(btn.x,btn.y);
                                         }
                                     }
-                                }
+
                             }
                         }
                     }
