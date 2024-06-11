@@ -211,7 +211,7 @@ public class PrideParadox extends ApplicationAdapter {
                 playerAnimationId=1;
                 playerFPS=0.02f;
             }
-            if(!fireKey&&frameIndex>11){
+            if(!fireKey&&frameIndex>12){
                 fireProjectile=false;
                 playerTime=0;
             }
@@ -716,11 +716,27 @@ public class PrideParadox extends ApplicationAdapter {
                             playerTime=0;
                             fireProjectile=true;
                         }
+                        if(buttonCode==11){
+                            playerForward=false;
+                            playerBackward=true;
+                        }
+                        if(buttonCode==12){
+                            playerForward=true;
+                            playerBackward=false;
+                        }
+                        if(buttonCode==13){
+                            playerTurnRight=true;
+                            playerTurnLeft=false;
+                        }
+                        if(buttonCode==14){
+                            playerTurnRight=false;
+                            playerTurnLeft=true;
+                        }
                     }
                 }break;
 
             }
-//            Gdx.app.log("Controller", "button down: " + buttonCode);
+            Gdx.app.log("Controller", "button down: " + buttonCode);
             return false;
         }
 
@@ -794,6 +810,22 @@ public class PrideParadox extends ApplicationAdapter {
                     if(fight){
                         if(buttonCode==0){
                             fireKey=false;
+                        }
+                        if(buttonCode==11){
+                            playerForward=false;
+                            playerBackward=false;
+                        }
+                        if(buttonCode==12){
+                            playerForward=false;
+                            playerBackward=false;
+                        }
+                        if(buttonCode==13){
+                            playerTurnRight=false;
+                            playerTurnLeft=false;
+                        }
+                        if(buttonCode==14){
+                            playerTurnRight=false;
+                            playerTurnLeft=false;
                         }
                     }
                     if(choiceMode){
