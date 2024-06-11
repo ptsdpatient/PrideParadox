@@ -8,6 +8,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.Controllers;
@@ -67,9 +68,7 @@ public class PrideParadox extends ApplicationAdapter {
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
     public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet;
-
     public ShapeRenderer shapeRenderer;
-
     public static String typewriter,dialogueMessage="";
     SpriteBatch batch;
     BitmapFont titleFont;
@@ -79,9 +78,11 @@ public class PrideParadox extends ApplicationAdapter {
     String[] mobileButtonNames={"look","icon","fire","forward","backward"};
     String[] arenaBoundNames={"up","down","left","right"};
     public static Array<ArenaBounds> arenaBounds=new Array<>();
-    public enum GameState {Menu, Load, Save, Pause, Play, Instructions}
+    public enum GameState {Menu, Load, Pause, Play, Instructions}
     public enum choiceState{A,B}
     static choiceState choice=choiceState.A;
+    Preferences[] gameSaves=new Preferences[3];
+
     public static FileHandle files(String input){
         return Gdx.files.internal(input);
     }
@@ -190,7 +191,7 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void storyInitialize(){
         levels.add(new Array<StoryLine>());
-        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",false))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",false))));
+        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
         levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
         levels.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe",false)))));
 
@@ -286,6 +287,8 @@ public class PrideParadox extends ApplicationAdapter {
         mobileButtonSheet=extractSprites("buttons.png",64,64);
         gameButtonSheet=extractSprites("buttons-2.png",64,64);
 
+
+
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
 
@@ -306,7 +309,8 @@ public class PrideParadox extends ApplicationAdapter {
         player.setOriginCenter();
 
         for(int i=0;i<3;i++){
-            loadButtonArray.add(new LoadButton(200+i*400,i,75,loadButtonSheet));
+            gameSaves[i]=Gdx.app.getPreferences("saves_"+i);
+            loadButtonArray.add(new LoadButton(200+i*400,i,75,loadButtonSheet,gameSaves[i]));
         }
 
         int index = 0;
@@ -366,13 +370,12 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
 
             case Play: {
+                for(GameButton button :gameButtonList){
+                    button.render(batch);
+                }
                 if(fight){
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
                     drawPlayer(batch);
-
-                    for(GameButton button :gameButtonList){
-                        button.render(batch);
-                    }
 
                     for(Projectile proj : projectileList){
                         proj.render(batch);
@@ -518,7 +521,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static class StoryLine {
         public String message;
         public String byLine;
-        public Boolean fightState=null;
+        public Boolean fightState=false;
         public int depth=0;
         public StoryLine choiceA=null,choiceB=null;
 
@@ -571,20 +574,27 @@ public class PrideParadox extends ApplicationAdapter {
         public int index;
         private BitmapFont font;
         private Sprite object;
-        public LoadButton(float x, int index, float progress, TextureRegion[] buttonSheet){
+        public int level;
+        public int kills;
+        public float health;
+        public LoadButton(float x, int index, float progress, TextureRegion[] buttonSheet,Preferences save){
             this.x=x;
-            this.progress=progress;
+            this.level=save.getInteger("level",0);
+            this.kills=save.getInteger("klls",0);
+            this.health=save.getInteger("health",100);
+            this.progress=level*100/6f;
             this.index=index;
-            this.object= new Sprite(buttonSheet[index==0?0:1]);
             this.font=new BitmapFont(files("joystix.fnt"));
-            object.setScale(5f);
+            this.object= new Sprite(buttonSheet[(level==0)?0:1]);
+            object.setScale(6f);
             object.setOriginCenter();
             object.setPosition(x,y);
+
         }
         public void render(SpriteBatch batch, float timeElapsed) {
             float alpha=1;
             object.draw(batch);
-            if(index!=0)font.draw(batch,progress+"%",x-50,y+50);
+            font.draw(batch,(int) progress+"%",x,y-30);
             if (index == loadButtonIndex)alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
             font.setColor(1,1,1,(index==loadButtonIndex)?alpha:1);
             object.setAlpha(index == loadButtonIndex ? alpha : 1);
@@ -757,7 +767,7 @@ public class PrideParadox extends ApplicationAdapter {
 
                     }
                     if (buttonCode == 12) {
-                        if (menuButtonActiveIndex < 3) menuButtonActiveIndex++;
+                        if (menuButtonActiveIndex < 2) menuButtonActiveIndex++;
                         else controller.startVibration(300, 0.5f);
                     }
                     if (buttonCode == 0) {
@@ -874,7 +884,7 @@ public class PrideParadox extends ApplicationAdapter {
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (menuButtonActiveIndex < 3) menuButtonActiveIndex++;
+                            if (menuButtonActiveIndex < 2) menuButtonActiveIndex++;
                             else controller.startVibration(300, 0.5f);
                         }
                     }
