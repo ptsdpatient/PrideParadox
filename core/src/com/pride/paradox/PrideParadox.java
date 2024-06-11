@@ -50,7 +50,7 @@ public class PrideParadox extends ApplicationAdapter {
     public BitmapFont dialogueFont,choiceFont;
     public static float playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
-    public static Boolean gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
+    public static Boolean gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<PauseButton> pauseButtons=new Array<>();
     public static Array<GameButton> gameButtonList = new Array<>();
@@ -114,6 +114,11 @@ public class PrideParadox extends ApplicationAdapter {
                     textDuration=0f;
                     typewriterIndex=0;
                     drawTextTime=10f;
+                    if(line.fightState){
+                        fight=true;
+                        drawingText=false;
+                        drawingDialogue=false;
+                    }
                     return;
                 }
             }
@@ -185,9 +190,9 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void storyInitialize(){
         levels.add(new Array<StoryLine>());
-        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator"))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator"))));
-        levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe")))));
-        levels.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe")))));
+        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",false))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",false))));
+        levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
+        levels.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe",false)))));
 
         for(StoryLine level : levels.get(currentLevel)){
             level.depth=calculateDepth(level);
@@ -513,6 +518,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static class StoryLine {
         public String message;
         public String byLine;
+        public Boolean fightState=null;
         public int depth=0;
         public StoryLine choiceA=null,choiceB=null;
 
@@ -522,9 +528,10 @@ public class PrideParadox extends ApplicationAdapter {
             B,
         }
         choiceState choice=null;
-        public StoryLine(String message, String byLine) {
+        public StoryLine(String message, String byLine,Boolean fightState) {
             this.message = message.toUpperCase();
             this.byLine = byLine.toUpperCase();
+            this.fightState=fightState;
         }
         public StoryLine(String message, String byLine, StoryLine choiceA) {
             this.message = message.toUpperCase();
