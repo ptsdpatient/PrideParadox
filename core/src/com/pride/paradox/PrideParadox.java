@@ -830,6 +830,12 @@ public class PrideParadox extends ApplicationAdapter {
                         saveIndex=loadButtonIndex;
                         loadGame(saveIndex);
                         gameStarted=true;
+
+                        drawingDialogue=true;
+                        drawingText=true;
+                        fight=false;
+                        storyLineIndex=0;
+
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1062,6 +1068,12 @@ public class PrideParadox extends ApplicationAdapter {
                         saveIndex=loadButtonIndex;
                         loadGame(saveIndex);
                         gameStarted=true;
+
+                        drawingDialogue=true;
+                        drawingText=true;
+                        fight=false;
+                        storyLineIndex=0;
+
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1302,7 +1314,14 @@ public class PrideParadox extends ApplicationAdapter {
                         if(btn.object.getBoundingRectangle().contains(point)){
                             saveIndex=loadButtonIndex;
                             loadGame(saveIndex);
+
                             gameStarted=true;
+
+                            drawingDialogue=true;
+                            drawingText=true;
+                            fight=false;
+                            storyLineIndex=0;
+
                             gameState=GameState.Play;
                             drawTextTime=10f;
                             exit=false;
