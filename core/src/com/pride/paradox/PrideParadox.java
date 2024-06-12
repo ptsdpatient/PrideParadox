@@ -133,14 +133,15 @@ public class PrideParadox extends ApplicationAdapter {
         batch.draw(background,1280/2f-500,0,1000,800);
         if(drawingText)dialogueFont.draw(batch,typewriter,230,220,800, Align.topLeft,true);
     }
-        public static int calculateDepth(StoryLine storyLine){
-            int depth=0;
-            for(StoryLine current = storyLine;current!=null;current=current.choiceA){
-                depth++;
+
+    public static int calculateDepth(StoryLine storyLine){
+        int depth=0;
+        for(StoryLine current = storyLine;current!=null;current=current.choiceA){
+            depth++;
 //                print(current.message);
-            }
-            return depth;
         }
+        return depth;
+    }
 
 
     public static void saveGame(int saveIndex){
@@ -206,6 +207,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static void storyInitialize(){
+        levels.clear();
         levels.add(new Array<StoryLine>());
         levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
         levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
@@ -442,7 +444,7 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
 
             case Load:{
-                titleFont.draw(batch,"SELECT GAME",220,600,900,10,true);
+                titleFont.draw(batch,"SELECT SAVE",1280/2f-180,600);
                 for(LoadButton btn : loadButtonArray){
                     btn.render(batch,timeElapsed);
                 }
@@ -567,6 +569,110 @@ public class PrideParadox extends ApplicationAdapter {
             choice=choiceState.Nill;
         }
     }
+
+
+
+    public static class EnemyClass{
+        public static float x,y,rotation,alpha,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500;
+        public static Sprite object;
+        public static TextureRegion[] spriteSheet;
+        public static Vector2 velocity,accelerationVector;
+        public float health=100;
+        public EnemyClass(float x,float y,float rotation){
+            EnemyClass.x =x;
+            EnemyClass.y =y;
+            EnemyClass.rotation =rotation;
+        }
+        public static void render(SpriteBatch batch) {
+            object.draw(batch);
+        }
+        public static Boolean bounds(Vector2 point){
+            return object.getBoundingRectangle().contains(point);
+        }
+
+        public static void facePlayer(){
+            deltaX = player.getX() + player.getWidth() / 2 - (object.getX() + object.getWidth() / 2);
+            deltaY = player.getY() + player.getHeight() / 2 - (object.getY() + object.getHeight() / 2);
+            object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)) - 90);
+        }
+        public static void stayAroundPlayer(float distance){
+            deltaX = player.getX() + player.getWidth() / 2 + distance * (float) Math.cos(object.getRotation()*MathUtils.radiansToDegrees) - object.getWidth() / 2;
+            deltaY = player.getY() + player.getHeight() / 2 + distance * (float) Math.sin(object.getRotation()*MathUtils.radiansToDegrees) - object.getHeight() / 2;
+            object.setPosition(x, y);
+        }
+        public static void rotate(float amplitude){
+            object.rotate(amplitude);
+        }
+        public static void attackPlayer(float acceleration){
+            accelerationVector = new Vector2((float) Math.cos( (float) Math.toRadians(object.getRotation())), (float) Math.sin( (float) Math.toRadians(object.getRotation()))).scl(acceleration * Gdx.graphics.getDeltaTime());
+            velocity.add(accelerationVector);
+            object.setPosition(object.getX() + velocity.x * Gdx.graphics.getDeltaTime(),object.getY() + velocity.y * Gdx.graphics.getDeltaTime());
+        }
+        public static void waveHorizontal(float time){
+            object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.sin(time * 2));
+        }
+        public static void waveVertical(float time){
+            object.setPosition( Gdx.graphics.getWidth() / 2f + 50 * (float)Math.sin(time * 2),time * 100);
+        }
+        public static void tanHorizontal(float time){
+            object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.tan(time * 2));
+        }
+        public static void tanVertical(float time){
+            object.setPosition(time * 100, Gdx.graphics.getWidth() / 2f + 50 * (float)Math.tan(time * 2));
+        }
+        public static void throwHorizontal(float time){
+            deltaX = initialVelocityX * time;
+            deltaY = Gdx.graphics.getHeight() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
+            object.setPosition(deltaX, deltaY);
+        }
+        public static void throwVertical(float time){
+            deltaY = initialVelocityX * time;
+            deltaX = Gdx.graphics.getWidth() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
+            object.setPosition(deltaX, deltaY);
+        }
+    }
+
+    public static class Kid extends EnemyClass{
+
+        public Kid(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+    public static class Dog extends EnemyClass{
+
+        public Dog(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+
+    public static class Doctor extends EnemyClass{
+
+        public Doctor(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+
+    public static class Scammer extends EnemyClass{
+
+        public Scammer(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+
+    public static class Bot extends EnemyClass{
+
+        public Bot(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+
+    public static class Politician extends EnemyClass{
+
+        public Politician(float x, float y, float rotation) {
+            super(x, y, rotation);
+        }
+    }
+
 
 
     public static class GameButton{
@@ -835,7 +941,7 @@ public class PrideParadox extends ApplicationAdapter {
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-
+                        storyInitialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1073,7 +1179,7 @@ public class PrideParadox extends ApplicationAdapter {
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-
+                        storyInitialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1321,7 +1427,7 @@ public class PrideParadox extends ApplicationAdapter {
                             drawingText=true;
                             fight=false;
                             storyLineIndex=0;
-
+                            storyInitialize();
                             gameState=GameState.Play;
                             drawTextTime=10f;
                             exit=false;
@@ -1372,6 +1478,8 @@ public class PrideParadox extends ApplicationAdapter {
                             else {
                                 mouseControlActive=!mouseControlActive;
                                 fireKey=false;
+                                fireProjectile=false;
+                                playerTime=0;
                             }
 
                         }
