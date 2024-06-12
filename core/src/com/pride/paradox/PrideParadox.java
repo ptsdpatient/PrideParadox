@@ -206,6 +206,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static void storyInitialize(){
+        levels.clear();
         levels.add(new Array<StoryLine>());
         levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
         levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
@@ -442,7 +443,7 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
 
             case Load:{
-                titleFont.draw(batch,"SELECT GAME",220,600,900,10,true);
+                titleFont.draw(batch,"SELECT SAVE",1280/2f-180,600);
                 for(LoadButton btn : loadButtonArray){
                     btn.render(batch,timeElapsed);
                 }
@@ -835,7 +836,7 @@ public class PrideParadox extends ApplicationAdapter {
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-
+                        storyInitialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1073,7 +1074,7 @@ public class PrideParadox extends ApplicationAdapter {
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-
+                        storyInitialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1321,7 +1322,7 @@ public class PrideParadox extends ApplicationAdapter {
                             drawingText=true;
                             fight=false;
                             storyLineIndex=0;
-
+                            storyInitialize();
                             gameState=GameState.Play;
                             drawTextTime=10f;
                             exit=false;
@@ -1372,6 +1373,8 @@ public class PrideParadox extends ApplicationAdapter {
                             else {
                                 mouseControlActive=!mouseControlActive;
                                 fireKey=false;
+                                fireProjectile=false;
+                                playerTime=0;
                             }
 
                         }
