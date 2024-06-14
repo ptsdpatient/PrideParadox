@@ -22,8 +22,10 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.DistanceFieldFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
@@ -50,10 +52,11 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float health=100,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
-    public static Boolean gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
+    public static Boolean playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
+    public static Array<ExplosionEffect> explosionList=new Array<>();
     public static Array<PauseButton> pauseButtons=new Array<>();
     public static Array<GameButton> gameButtonList = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
@@ -64,6 +67,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
     public Viewport viewport;
+    public static Circle playerBounds;
     public static Rectangle choiceABounds,choiceBBounds;
     public InputProcessor input;
     public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
@@ -72,6 +76,7 @@ public class PrideParadox extends ApplicationAdapter {
     public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet,kidSheet,dogSheet;
     public ShapeRenderer shapeRenderer;
     public static String typewriter,dialogueMessage="";
+    public static EnemyAction FollowPlayer;
     SpriteBatch batch;
     BitmapFont titleFont;
     GlyphLayout layout;
@@ -228,6 +233,8 @@ public class PrideParadox extends ApplicationAdapter {
             level.depth=calculateDepth(level);
 //            print(level.depth);
         }
+        initializeLevel();
+
     }
     public static void drawPlayer(SpriteBatch batch){
         frameIndex = (int) (playerTime / playerFPS) % playerAnimation.get(playerAnimationId).getKeyFrames().length;
@@ -255,6 +262,13 @@ public class PrideParadox extends ApplicationAdapter {
                 playerAnimationId=0;
             }
         }
+
+        if(playerAnimationId==2 && frameIndex==4){
+            playerAnimationId=1;
+            playerHurt=false;
+            playerFPS=0.02f;
+        }
+
         if(playerForward||playerBackward){
             float radians=MathUtils.degreesToRadians*(player.getRotation()+90);
             float amplitude=2.4f*(playerForward?-1:1);
@@ -269,11 +283,39 @@ public class PrideParadox extends ApplicationAdapter {
         player.setSize(playerFrame.getRegionWidth(), playerFrame.getRegionHeight());
         player.setOrigin(player.getWidth() / 2, player.getHeight() / 2);
         player.draw(batch);
+        playerBounds=new Circle(player.getX(),player.getY(),player.getRegionWidth()/2f);
     }
 
+public static void initializeLevel() {
+    timeElapsed=0;
+    enemyList.clear();
+    enemyList.add(
+            new EnemyClass(Kid,0, 0, 300, 30, 0, 3f),
+            new EnemyClass(Kid,0, 0, 700, 400, 0, 3f)
+    );
+
+}
 
 public static void initializeEnemyType(){
-    Kid=new EnemyType(extractSprites("kid.png",64,64));
+        Array<EnemyAnimation[]> animation = new Array<>();
+        animation.add(
+                    new EnemyAnimation[]{
+                            new EnemyAnimation(FollowPlayer.type,5,20),
+                            new EnemyAnimation(FollowPlayer.type,5,0),
+                            new EnemyAnimation(FollowPlayer.type,5,20)
+                    },
+                    new EnemyAnimation[]{
+
+                    }
+        );
+        Kid=new EnemyType(extractSprites("kid.png",64,64),animation);
+
+
+
+
+//        new Array<>(
+//            new EnemyAnimation[]{new EnemyAnimation(FollowPlayer.type,50,12)
+//    }));
 
 }
     @Override
@@ -327,13 +369,12 @@ public static void initializeEnemyType(){
         int startIndex = 0;
         for (int frameCount : playerIndex) {
             TextureRegion[] frames = new TextureRegion[frameCount];
-            for (int i = 0; i < frameCount; i++) {
-                frames[i] = totalFrames[0][startIndex + i];
-            }
+            System.arraycopy(totalFrames[0], startIndex, frames, 0, frameCount);
             startIndex += frameCount;
             playerAnimation.add(new Animation<>(0.1f, frames));
         }
 
+        FollowPlayer=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Look,EnemyActionType.Move}));
 
         player=new Sprite(playerAnimation.get(0).getKeyFrame(0));
         player.setPosition(1280/2f,720/2f);
@@ -345,13 +386,6 @@ public static void initializeEnemyType(){
         }
 
         initializeEnemyType();
-
-        enemyList.add(
-                new EnemyClass(Kid,0,300,30,0,3f),
-                new EnemyClass(Kid,0,700,400,0,3f)
-        );
-
-        enemyList.get(0).addAnimation(new EnemyAnimation(new Array<>(new EnemyActionType[]{EnemyActionType.Move,EnemyActionType.Look}),4));
 
         int index = 0;
         for (String name : menuButtonNames) {
@@ -373,7 +407,7 @@ public static void initializeEnemyType(){
             mobileButtonList.add(new MobileButton(name,mobileButtonSheet,index));
             index++;
         }
-
+        playerBounds=new Circle(player.getX(),player.getY(),player.getRegionWidth()/2f);
         storyInitialize();
     }
 
@@ -414,13 +448,29 @@ public static void initializeEnemyType(){
                     button.render(batch);
                 }
                 if(fight){
+
+
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
                     drawPlayer(batch);
 
-
+                    for(ExplosionEffect effect:explosionList){
+                        effect.render(batch);
+                    }
                     for(EnemyClass enemy : enemyList){
                         enemy.render(batch);
-                        if(enemy.health<2)enemyList.removeValue(enemy,true);
+                        if(enemy.health<2){
+                            enemyList.removeValue(enemy,true);
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y));
+                        }
+                        if(enemy.bounds.overlaps(playerBounds)&&playerAnimationId!=2){
+                            health-=1;
+                            playerAnimationId=2;
+                            playerHurt=true;
+                            Controllers.getControllers().first().startVibration(300,0.7f);
+                            enemyList.removeValue(enemy,true);
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y));
+                            playerFPS=0.1f;
+                        }
                     }
 
                     for(Projectile proj : projectileList){
@@ -574,7 +624,6 @@ public static void initializeEnemyType(){
                 time=0;
                 obj.scale(0.025f);
             }
-
             obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             obj.draw(sb);
         }
@@ -613,10 +662,34 @@ public static void initializeEnemyType(){
     }
 
 
+    public static class ExplosionEffect{
+        private final ParticleEffect effects;
+        public ExplosionEffect(float x, float y){
+            effects = new ParticleEffect();
+            effects.load(files("explosionFX.p"),files(""));
+            effects.setPosition(x, y);
+            effects.scaleEffect(1f);
+            effects.start();
+        }
+        public void render(SpriteBatch sb){
+            effects.update(Gdx.graphics.getDeltaTime());
+            effects.draw(sb,Gdx.graphics.getDeltaTime());
+        }
+
+    }
     public static class EnemyType{
         public TextureRegion[] texture;
-        public EnemyType(TextureRegion[] spriteSheet){
+        Array<EnemyAnimation[]> animations;
+        public EnemyType(TextureRegion[] spriteSheet,Array<EnemyAnimation[]> animations){
             this.texture=spriteSheet;
+            this.animations=animations;
+        }
+    }
+
+    public static class EnemyAction{
+        public Array<EnemyActionType> type;
+        public EnemyAction(Array<EnemyActionType> type){
+            this.type=type;
         }
     }
 
@@ -652,31 +725,35 @@ public static void initializeEnemyType(){
     }
 
     public static class EnemyClass{
-        public float alpha,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500,scaleFactor=0f;
+        public float alpha=0,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500,scaleFactor=0f;
         public float time=0;
         public Sprite object;
         public Circle bounds;
-        public Array<EnemyAnimation> animationList;
-        public Vector2 velocity,accelerationVector;
+        public Array<EnemyAnimation> animationList= new Array<>();
+        public Vector2 velocity=new Vector2(3,3),accelerationVector=new Vector2(3,3);
         public float health=10;
-        public EnemyClass(EnemyType type,int index,float x,float y,float rotation,float scaleFactor){
+        public EnemyClass(EnemyType type,int animationIndex ,int index,float x,float y,float rotation,float scaleFactor){
             object=new Sprite(type.texture[index]);
             object.setPosition(x,y);
             object.setRotation(rotation);
-            animationList=new Array<>();
-//            object.setScale(3f);
+            animationList.addAll(type.animations.get(animationIndex));
+            print(animationList.size);
             object.setSize(object.getWidth()*scaleFactor,object.getHeight()*scaleFactor);
             object.setOriginCenter();
             this.scaleFactor=scaleFactor;
             this.bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
         }
 
-        public void addAnimation(EnemyAnimation animation){
-            animationList.add(animation);
-        }
 
         public void render(SpriteBatch batch) {
             time+=Gdx.graphics.getDeltaTime();
+
+            if(alpha!=1f){
+                alpha+=Gdx.graphics.getDeltaTime();
+                if(MathUtils.floor(alpha)==1)alpha=1f;
+                object.setAlpha(alpha);
+            }
+
             if(animationList.notEmpty()){
                 animationList.peek().update();
                     for(EnemyActionType type :  animationList.peek().type)
@@ -689,13 +766,16 @@ public static void initializeEnemyType(){
                             }break;
 
                         }
-                if(animationList.peek().duration<0)animationList.pop();
+                if(animationList.peek().duration<0){
+//                    print("pop");
+                    animationList.pop();
+                }
             }
+            bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
             object.draw(batch);
         }
 
         public Boolean getBounds(Vector2 point){
-            bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
             return bounds.contains(point);
         }
 
@@ -703,7 +783,7 @@ public static void initializeEnemyType(){
         public void facePlayer(){
             deltaX = player.getX() + player.getWidth() / 2 - (object.getX() + object.getWidth() / 2);
             deltaY = player.getY() + player.getHeight() / 2 - (object.getY() + object.getHeight() / 2);
-            object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)) - 90);
+            object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)) );
         }
         public  void stayAroundPlayer(float distance){
             deltaX = player.getX() + player.getWidth() / 2 + distance * (float) Math.cos(object.getRotation()*MathUtils.radiansToDegrees) - object.getWidth() / 2;
@@ -721,8 +801,8 @@ public static void initializeEnemyType(){
         public void attackPlayer(float acceleration){
             accelerationVector = new Vector2((float) Math.cos( (float) Math.toRadians(object.getRotation())), (float) Math.sin( (float) Math.toRadians(object.getRotation()))).scl(acceleration * Gdx.graphics.getDeltaTime());
             velocity.add(accelerationVector);
-            object.setPosition(object.getX() + velocity.x * Gdx.graphics.getDeltaTime(),object.getY() + velocity.y * Gdx.graphics.getDeltaTime());
-        }
+            object.translate(velocity.x * Gdx.graphics.getDeltaTime(),velocity.y * Gdx.graphics.getDeltaTime());
+      }
         public void waveHorizontal(){
             object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.sin(time * 2));
         }
@@ -1128,6 +1208,7 @@ public static void initializeEnemyType(){
                     if(fight){
 //                        print(MathUtils.floor(value));
                         if(axisCode==5){
+
                             fireKey=(MathUtils.floor(value) >0.5);
                             if(fireKey){
                                 playerTime=0;
