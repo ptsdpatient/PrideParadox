@@ -26,6 +26,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -58,6 +59,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static Array<LoadButton> loadButtonArray= new Array<>();
     public static Array<Array<StoryLine>> levels=new Array<>();
     public static Array<Projectile> projectileList=new Array<>();
+    public static Array<EnemyClass> enemyList=new Array<>();
     public static Array<MobileButton> mobileButtonList = new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
@@ -67,7 +69,7 @@ public class PrideParadox extends ApplicationAdapter {
     public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
-    public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet;
+    public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet,kidSheet,dogSheet;
     public ShapeRenderer shapeRenderer;
     public static String typewriter,dialogueMessage="";
     SpriteBatch batch;
@@ -77,6 +79,7 @@ public class PrideParadox extends ApplicationAdapter {
     static String[] pauseButtonNames={"RESUME","SAVE","HOW TO PLAY?","MENU","QUIT"};
     String[] mobileButtonNames={"look","icon","fire","forward","backward"};
     String[] arenaBoundNames={"up","down","left","right"};
+    public static EnemyType Kid,Dog,Doctor,Scammer,Bot,Politician;
     public static Array<ArenaBounds> arenaBounds=new Array<>();
     public enum GameState {Menu, Load, Pause, Play, Instructions}
     public enum choiceState{A,B}
@@ -86,6 +89,14 @@ public class PrideParadox extends ApplicationAdapter {
     public static FileHandle files(String input){
         return Gdx.files.internal(input);
     }
+
+    public static enum EnemyActionType{
+        Look,
+        Move,
+    }
+
+
+
 
     public static void loadGame(int saveIndex){
         currentLevel=gameSaves[saveIndex].getInteger("level",0);
@@ -261,7 +272,10 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
 
+public static void initializeEnemyType(){
+    Kid=new EnemyType(extractSprites("kid.png",64,64));
 
+}
     @Override
     public void create() {
         Pixmap pixmap = new Pixmap(files("cursor.png"));
@@ -330,7 +344,14 @@ public class PrideParadox extends ApplicationAdapter {
             loadButtonArray.add(new LoadButton(200+i*400,i,loadButtonSheet,gameSaves[i]));
         }
 
+        initializeEnemyType();
 
+        enemyList.add(
+                new EnemyClass(Kid,0,300,30,0,3f),
+                new EnemyClass(Kid,0,700,400,0,3f)
+        );
+
+        enemyList.get(0).addAnimation(new EnemyAnimation(new Array<>(new EnemyActionType[]{EnemyActionType.Move,EnemyActionType.Look}),4));
 
         int index = 0;
         for (String name : menuButtonNames) {
@@ -396,13 +417,28 @@ public class PrideParadox extends ApplicationAdapter {
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
                     drawPlayer(batch);
 
+
+                    for(EnemyClass enemy : enemyList){
+                        enemy.render(batch);
+                        if(enemy.health<2)enemyList.removeValue(enemy,true);
+                    }
+
                     for(Projectile proj : projectileList){
                         proj.render(batch);
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
                                 projectileList.removeValue(proj,true);
                             }
+                        for(EnemyClass enemy: enemyList){
+                            if(enemy.getBounds(proj.getPoint())){
+                                enemy.health-=3;
+                                projectileList.removeValue(proj,true);
+                            }
+                        }
                     }
+
+
+
                     if(!mouseControlActive)for(MobileButton btn : mobileButtonList){
                         btn.render(batch);
                         btn.button.setScale(btn.active?4.2f:4f);
@@ -460,8 +496,10 @@ public class PrideParadox extends ApplicationAdapter {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-
+        shapeRenderer.setColor(Color.GREEN);
+        for(EnemyClass enemy : enemyList){
+            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
+        }
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -527,12 +565,16 @@ public class PrideParadox extends ApplicationAdapter {
             obj.setOrigin(obj.getWidth() / 2, obj.getHeight() / 2);
             this.radians=MathUtils.degreesToRadians*(rotation+90);
         }
+        public Vector2 getPoint(){
+            return new Vector2(obj.getX(),obj.getY());
+        }
         public void render(SpriteBatch sb){
             time+=Gdx.graphics.getDeltaTime();
             if(time>0.05f){
                 time=0;
                 obj.scale(0.025f);
             }
+
             obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             obj.draw(sb);
         }
@@ -571,107 +613,141 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
 
+    public static class EnemyType{
+        public TextureRegion[] texture;
+        public EnemyType(TextureRegion[] spriteSheet){
+            this.texture=spriteSheet;
+        }
+    }
+
+    public static class EnemyAnimation{
+        public Array<EnemyActionType> type=new Array<>();
+        public float duration,parameter=0;
+        public Boolean clear=false;
+        public EnemyAnimation(EnemyActionType type,float duration,float parameter){
+            this.duration=duration;
+            this.parameter=parameter;
+            this.type.add(type);
+        }
+        public EnemyAnimation(Array<EnemyActionType> type,float duration,float parameter){
+            this.duration=duration;
+            this.parameter=parameter;
+            this.type=type;
+        }
+        public EnemyAnimation(Array<EnemyActionType> type,float duration){
+            this.duration=duration;
+            this.type=type;
+        }
+
+        public EnemyAnimation(EnemyActionType type,float duration){
+            this.duration=duration;
+            this.type.add(type);
+        }
+        public void update(){
+            duration-=Gdx.graphics.getDeltaTime();
+            if(duration<0){
+                clear=true;
+            }
+        }
+    }
 
     public static class EnemyClass{
-        public static float x,y,rotation,alpha,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500;
-        public static Sprite object;
-        public static TextureRegion[] spriteSheet;
-        public static Vector2 velocity,accelerationVector;
-        public float health=100;
-        public EnemyClass(float x,float y,float rotation){
-            EnemyClass.x =x;
-            EnemyClass.y =y;
-            EnemyClass.rotation =rotation;
-        }
-        public static void render(SpriteBatch batch) {
-            object.draw(batch);
-        }
-        public static Boolean bounds(Vector2 point){
-            return object.getBoundingRectangle().contains(point);
+        public float alpha,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500,scaleFactor=0f;
+        public float time=0;
+        public Sprite object;
+        public Circle bounds;
+        public Array<EnemyAnimation> animationList;
+        public Vector2 velocity,accelerationVector;
+        public float health=10;
+        public EnemyClass(EnemyType type,int index,float x,float y,float rotation,float scaleFactor){
+            object=new Sprite(type.texture[index]);
+            object.setPosition(x,y);
+            object.setRotation(rotation);
+            animationList=new Array<>();
+//            object.setScale(3f);
+            object.setSize(object.getWidth()*scaleFactor,object.getHeight()*scaleFactor);
+            object.setOriginCenter();
+            this.scaleFactor=scaleFactor;
+            this.bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
         }
 
-        public static void facePlayer(){
+        public void addAnimation(EnemyAnimation animation){
+            animationList.add(animation);
+        }
+
+        public void render(SpriteBatch batch) {
+            time+=Gdx.graphics.getDeltaTime();
+            if(animationList.notEmpty()){
+                animationList.peek().update();
+                    for(EnemyActionType type :  animationList.peek().type)
+                            switch(type){
+                            case Look :{
+                                facePlayer();
+                            }break;
+                            case Move:{
+                                attackPlayer(animationList.peek().parameter);
+                            }break;
+
+                        }
+                if(animationList.peek().duration<0)animationList.pop();
+            }
+            object.draw(batch);
+        }
+
+        public Boolean getBounds(Vector2 point){
+            bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
+            return bounds.contains(point);
+        }
+
+        //methods
+        public void facePlayer(){
             deltaX = player.getX() + player.getWidth() / 2 - (object.getX() + object.getWidth() / 2);
             deltaY = player.getY() + player.getHeight() / 2 - (object.getY() + object.getHeight() / 2);
             object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)) - 90);
         }
-        public static void stayAroundPlayer(float distance){
+        public  void stayAroundPlayer(float distance){
             deltaX = player.getX() + player.getWidth() / 2 + distance * (float) Math.cos(object.getRotation()*MathUtils.radiansToDegrees) - object.getWidth() / 2;
             deltaY = player.getY() + player.getHeight() / 2 + distance * (float) Math.sin(object.getRotation()*MathUtils.radiansToDegrees) - object.getHeight() / 2;
-            object.setPosition(x, y);
+            object.setPosition(deltaX, deltaY);
         }
-        public static void rotate(float amplitude){
+        public  void stayAroundPlayer(float distance,float parameter){
+            deltaX = player.getX() + player.getWidth() / 2 + distance * (float) Math.cos((object.getRotation()+parameter)*MathUtils.radiansToDegrees) - object.getWidth() / 2;
+            deltaY = player.getY() + player.getHeight() / 2 + distance * (float) Math.sin((object.getRotation()+parameter)*MathUtils.radiansToDegrees) - object.getHeight() / 2;
+            object.setPosition(deltaX, deltaY);
+        }
+        public void rotate(float amplitude){
             object.rotate(amplitude);
         }
-        public static void attackPlayer(float acceleration){
+        public void attackPlayer(float acceleration){
             accelerationVector = new Vector2((float) Math.cos( (float) Math.toRadians(object.getRotation())), (float) Math.sin( (float) Math.toRadians(object.getRotation()))).scl(acceleration * Gdx.graphics.getDeltaTime());
             velocity.add(accelerationVector);
             object.setPosition(object.getX() + velocity.x * Gdx.graphics.getDeltaTime(),object.getY() + velocity.y * Gdx.graphics.getDeltaTime());
         }
-        public static void waveHorizontal(float time){
+        public void waveHorizontal(){
             object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.sin(time * 2));
         }
-        public static void waveVertical(float time){
+        public void waveVertical(){
             object.setPosition( Gdx.graphics.getWidth() / 2f + 50 * (float)Math.sin(time * 2),time * 100);
         }
-        public static void tanHorizontal(float time){
+        public void tanHorizontal(){
             object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.tan(time * 2));
         }
-        public static void tanVertical(float time){
+        public void tanVertical(){
             object.setPosition(time * 100, Gdx.graphics.getWidth() / 2f + 50 * (float)Math.tan(time * 2));
         }
-        public static void throwHorizontal(float time){
+        public void throwHorizontal(float initialVelocityY){
             deltaX = initialVelocityX * time;
             deltaY = Gdx.graphics.getHeight() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
             object.setPosition(deltaX, deltaY);
         }
-        public static void throwVertical(float time){
+        public void throwVertical(float initialVelocityX){
             deltaY = initialVelocityX * time;
             deltaX = Gdx.graphics.getWidth() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
             object.setPosition(deltaX, deltaY);
         }
     }
 
-    public static class Kid extends EnemyClass{
 
-        public Kid(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
-    public static class Dog extends EnemyClass{
-
-        public Dog(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
-
-    public static class Doctor extends EnemyClass{
-
-        public Doctor(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
-
-    public static class Scammer extends EnemyClass{
-
-        public Scammer(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
-
-    public static class Bot extends EnemyClass{
-
-        public Bot(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
-
-    public static class Politician extends EnemyClass{
-
-        public Politician(float x, float y, float rotation) {
-            super(x, y, rotation);
-        }
-    }
 
 
 
@@ -876,7 +952,7 @@ public class PrideParadox extends ApplicationAdapter {
                 }break;
 
             }
-            Gdx.app.log("Controller", "button down: " + buttonCode);
+//            Gdx.app.log("Controller", "button down: " + buttonCode);
             return false;
         }
 
@@ -1004,7 +1080,7 @@ public class PrideParadox extends ApplicationAdapter {
                 }
 
             }
-            Gdx.app.log("Controller", "button up: " + buttonCode);
+//            Gdx.app.log("Controller", "button up: " + buttonCode);
             return false;
         }
 
@@ -1097,7 +1173,7 @@ public class PrideParadox extends ApplicationAdapter {
                         }
                 }
             }
-            Gdx.app.log("Controller", "axis moved: " + axisCode + " value: " + value);
+//            Gdx.app.log("Controller", "axis moved: " + axisCode + " value: " + value);
             return false;
         }
     }
