@@ -223,6 +223,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static void storyInitialize(){
+        initializeEnemyType();
         levels.clear();
         levels.add(new Array<StoryLine>());
         levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
@@ -385,7 +386,6 @@ public static void initializeEnemyType(){
             loadButtonArray.add(new LoadButton(200+i*400,i,loadButtonSheet,gameSaves[i]));
         }
 
-        initializeEnemyType();
 
         int index = 0;
         for (String name : menuButtonNames) {
@@ -460,7 +460,7 @@ public static void initializeEnemyType(){
                         enemy.render(batch);
                         if(enemy.health<2){
                             enemyList.removeValue(enemy,true);
-                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y));
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f,true));
                         }
                         if(enemy.bounds.overlaps(playerBounds)&&playerAnimationId!=2){
                             health-=1;
@@ -468,7 +468,7 @@ public static void initializeEnemyType(){
                             playerHurt=true;
                             Controllers.getControllers().first().startVibration(300,0.7f);
                             enemyList.removeValue(enemy,true);
-                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y));
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f,true));
                             playerFPS=0.1f;
                         }
                     }
@@ -478,11 +478,13 @@ public static void initializeEnemyType(){
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
                                 projectileList.removeValue(proj,true);
+                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f,false));
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
                                 enemy.health-=3;
                                 projectileList.removeValue(proj,true);
+                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f,false));
                             }
                         }
                     }
@@ -664,11 +666,11 @@ public static void initializeEnemyType(){
 
     public static class ExplosionEffect{
         private final ParticleEffect effects;
-        public ExplosionEffect(float x, float y){
+        public ExplosionEffect(float x, float y,float scale,Boolean type){
             effects = new ParticleEffect();
-            effects.load(files("explosionFX.p"),files(""));
+            effects.load(files(type?"explosionFX.p":"bulletFX.p"),files(""));
             effects.setPosition(x, y);
-            effects.scaleEffect(1f);
+            effects.scaleEffect(scale);
             effects.start();
         }
         public void render(SpriteBatch sb){
@@ -737,7 +739,6 @@ public static void initializeEnemyType(){
             object.setPosition(x,y);
             object.setRotation(rotation);
             animationList.addAll(type.animations.get(animationIndex));
-            print(animationList.size);
             object.setSize(object.getWidth()*scaleFactor,object.getHeight()*scaleFactor);
             object.setOriginCenter();
             this.scaleFactor=scaleFactor;
