@@ -53,16 +53,19 @@ public class PrideParadox extends ApplicationAdapter {
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
     public static float health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
-    public static int kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
+    public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
     public static Boolean playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
+    public static Array<OverButton> overButtonList =new Array<>();
     public static Array<ExplosionEffect> explosionList=new Array<>();
     public static Array<PauseButton> pauseButtons=new Array<>();
+    public static Array<HealthBar> healthBars=new Array<>();
     public static Array<GameButton> gameButtonList = new Array<>();
     public static Array<LoadButton> loadButtonArray= new Array<>();
-    public static Array<Array<StoryLine>> levels=new Array<>();
+    public static Array<Array<StoryLine>> gameStory=new Array<>();
     public static Array<Projectile> projectileList=new Array<>();
     public static Array<EnemyClass> enemyList=new Array<>();
+    public static Array<EnemyWave[]> enemyWaves= new Array<>(6);
     public static Array<MobileButton> mobileButtonList = new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
     public static StoryLine currentLine;
@@ -70,7 +73,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static Circle playerBounds;
     public static Rectangle choiceABounds,choiceBBounds;
     public InputProcessor input;
-    public Texture menuBG, cursorTexture, gamepadConnect,htp,arena;
+    public Texture menuBG, cursorTexture, gamepadConnect,htp,arena,bgTexture;
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
     public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet,kidSheet,dogSheet;
@@ -81,12 +84,13 @@ public class PrideParadox extends ApplicationAdapter {
     BitmapFont titleFont;
     GlyphLayout layout;
     static String[] menuButtonNames = {"START", "HOW TO PLAY?","GAME RESET" ,"EXIT"};
+    static String[] overButtonNames={"RETRY","MENU","QUIT"};
     static String[] pauseButtonNames={"RESUME","SAVE","HOW TO PLAY?","MENU","QUIT"};
     String[] mobileButtonNames={"look","icon","fire","forward","backward"};
     String[] arenaBoundNames={"up","down","left","right"};
     public static EnemyType Kid,Dog,Doctor,Scammer,Bot,Politician;
     public static Array<ArenaBounds> arenaBounds=new Array<>();
-    public enum GameState {Menu, Load, Pause, Play, Instructions}
+    public enum GameState {Menu, Load, Pause, Play, Instructions,Over}
     public enum choiceState{A,B}
     static choiceState choice=choiceState.A;
     public static Preferences[] gameSaves=new Preferences[3];
@@ -102,11 +106,38 @@ public class PrideParadox extends ApplicationAdapter {
 
 
 
-
+    public static void handleOver(){
+        switch(overButtonActiveIndex){
+            case 0:{
+                health=10;
+                initialize();
+                gameState=GameState.Play;
+            }break;
+            case 1:{
+                gameState=GameState.Menu;
+            }break;
+            case 2:{
+                Gdx.app.exit();
+            }break;
+        }
+    }
     public static void loadGame(int saveIndex){
         currentLevel=gameSaves[saveIndex].getInteger("level",0);
-        health=gameSaves[saveIndex].getFloat("health",100);
+        health=gameSaves[saveIndex].getFloat("health",10);
         kills=gameSaves[saveIndex].getInteger("kills",0);
+    }
+    public static void initializeStory(){
+        for(StoryLine level : gameStory.get(currentLevel)){
+            level.depth=calculateDepth(level);
+        }
+    }
+    public static void createStory(){
+        gameStory.clear();
+        gameStory.add(new Array<>());
+        gameStory.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
+        gameStory.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
+        gameStory.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe",false)))));
+
     }
     public void drawChoice(SpriteBatch batch,StoryLine line){
         float alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
@@ -126,7 +157,7 @@ public class PrideParadox extends ApplicationAdapter {
                 typewriter=dialogueMessage.substring(0,typewriterIndex);
             }else {
                 if(lineSkip){
-                    if(((levels.get(currentLevel).get(storyLineIndex).depth!=lineDepth+1)&&levels.get(currentLevel).get(storyLineIndex).depth!=0)){
+                    if(((gameStory.get(currentLevel).get(storyLineIndex).depth!=lineDepth+1)&&gameStory.get(currentLevel).get(storyLineIndex).depth!=0)){
                          lineDepth++;
                     }
                     else {
@@ -222,20 +253,19 @@ public class PrideParadox extends ApplicationAdapter {
         return  sheet.split(width,height)[0];
     }
 
-    public static void storyInitialize(){
+
+    public static void initializeLevel(int currentLevel,int currentWave){
+        enemyList.clear();
+        enemyList.addAll(enemyWaves.get(currentLevel)[currentWave].enemies);
+    }
+
+
+    public static void initialize(){
         initializeEnemyType();
-        levels.clear();
-        levels.add(new Array<StoryLine>());
-        levels.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
-        levels.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
-        levels.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe",false)))));
+        initializeStory();
 
-        for(StoryLine level : levels.get(currentLevel)){
-            level.depth=calculateDepth(level);
-//            print(level.depth);
-        }
-        initializeLevel();
 
+        initializeLevel(currentLevel,currentWave);
     }
     public static void drawPlayer(SpriteBatch batch){
         frameIndex = (int) (playerTime / playerFPS) % playerAnimation.get(playerAnimationId).getKeyFrames().length;
@@ -287,13 +317,63 @@ public class PrideParadox extends ApplicationAdapter {
         playerBounds=new Circle(player.getX(),player.getY(),player.getRegionWidth()/2f);
     }
 
-public static void initializeLevel() {
+
+
+public static void createWaves() {
     timeElapsed=0;
     enemyList.clear();
-    enemyList.add(
-            new EnemyClass(Kid,0, 0, 300, 30, 0, 3f),
-            new EnemyClass(Kid,0, 0, 700, 400, 0, 3f)
+
+    enemyWaves.clear();
+//    enemyList.add(
+//            new EnemyClass(Kid,0, 0, 300, 30, 0, 3f),
+//            new EnemyClass(Kid,0, 0, 700, 400, 0, 3f)
+//    );
+
+
+    enemyWaves.addAll(
+            new EnemyWave[]{
+                    new EnemyWave(
+                        new EnemyClass[]{
+                                new EnemyClass(Kid,0,0,300,30,0,3f)
+                        },false),
+                    new EnemyWave(
+                            new EnemyClass[]{
+                                    new EnemyClass(Kid,0,0,300,30,0,3f)
+                            },false),
+                    new EnemyWave(
+                            new EnemyClass[]{
+                                    new EnemyClass(Kid,0,0,300,30,0,3f)
+                            },false),
+                    new EnemyWave(
+                            new EnemyClass[]{
+                                    new EnemyClass(Kid,0,0,300,30,0,3f)
+                            },false)
+
+            },
+            new EnemyWave[]{
+                    new EnemyWave(
+                            new EnemyClass[]{
+                                    new EnemyClass(Kid,0,0,300,30,0,3f)
+                            },false)
+            }
     );
+
+
+//    enemyWaves.addAll(
+//
+//            new EnemyWave(new EnemyClass[]{
+//                    new EnemyClass(Kid,0,0,300,30,0,3f),
+//                    new EnemyClass(Kid,0,0,300,30,0,3f)
+//            },false),
+//
+//            new EnemyWave(new EnemyClass[]{
+//                    new EnemyClass(Kid,0,0,300,30,0,3f),
+//                    new EnemyClass(Kid,0,0,300,30,0,3f)
+//            },false)
+//    );
+
+
+
 
 }
 
@@ -312,13 +392,9 @@ public static void initializeEnemyType(){
         Kid=new EnemyType(extractSprites("kid.png",64,64),animation);
 
 
-
-
-//        new Array<>(
-//            new EnemyAnimation[]{new EnemyAnimation(FollowPlayer.type,50,12)
-//    }));
-
 }
+
+
     @Override
     public void create() {
         Pixmap pixmap = new Pixmap(files("cursor.png"));
@@ -336,6 +412,7 @@ public static void initializeEnemyType(){
 
         layout = new GlyphLayout();
         titleFont = new BitmapFont(files("joystix.fnt"));
+        titleFont.getData().setScale(1.5f);
 //		titleFont.getData().scale(2f);
 
         shapeRenderer = new ShapeRenderer();
@@ -349,6 +426,7 @@ public static void initializeEnemyType(){
         choiceFont= new BitmapFont(files("choice.fnt"));
         background = new Texture(files("dialogue.png"));
         arena=new Texture(files("arena.png"));
+        bgTexture=new Texture(files("bg.png"));
 
         for(String name: arenaBoundNames) arenaBounds.add(new ArenaBounds(name));
 
@@ -361,7 +439,8 @@ public static void initializeEnemyType(){
         mobileButtonSheet=extractSprites("buttons.png",64,64);
         gameButtonSheet=extractSprites("buttons-2.png",64,64);
 
-
+        healthBars.add(new HealthBar(1280/2f -96,635,extractSprites("healthBarSheet.png",64,16),0));
+        healthBars.add(new HealthBar(1280/2f -96,635,extractSprites("healthBarSheet.png",64,16),1));
 
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
@@ -389,13 +468,19 @@ public static void initializeEnemyType(){
 
         int index = 0;
         for (String name : menuButtonNames) {
-            menuButtonArray.add(new MenuButton(270 - index * 70, name, index));
+            menuButtonArray.add(new MenuButton(320 - index * 80, name, index));
+            index++;
+        }
+
+        index=0;
+        for(String name:overButtonNames){
+            overButtonList.add(new OverButton(400 - index * 120, name, index));
             index++;
         }
 
         index=0;
         for(String name : pauseButtonNames){
-            pauseButtons.add(new PauseButton(520-index*90,name,index));
+            pauseButtons.add(new PauseButton(480-index*90,name,index));
             index++;
         }
 
@@ -408,7 +493,8 @@ public static void initializeEnemyType(){
             index++;
         }
         playerBounds=new Circle(player.getX(),player.getY(),player.getRegionWidth()/2f);
-        storyInitialize();
+        createStory();
+        initialize();
     }
 
     @Override
@@ -438,12 +524,19 @@ public static void initializeEnemyType(){
             }break;
 
             case Pause: {
+                batch.draw(bgTexture, 0, 0, 1280, 720);
+                titleFont.draw(batch,"PAUSE MENU",1280/2f-280,600);
+
                 for(PauseButton btn : pauseButtons){
                     btn.render(batch,timeElapsed);
                 }
             }break;
 
             case Play: {
+//                print(health);
+
+                for(HealthBar bar : healthBars)bar.render(batch);
+
                 for(GameButton button :gameButtonList){
                     button.render(batch);
                 }
@@ -455,12 +548,15 @@ public static void initializeEnemyType(){
 
                     for(ExplosionEffect effect:explosionList){
                         effect.render(batch);
+                        if(effect.die){
+                            explosionList.removeValue(effect,true);
+                        }
                     }
                     for(EnemyClass enemy : enemyList){
                         enemy.render(batch);
                         if(enemy.health<2){
                             enemyList.removeValue(enemy,true);
-                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f,true));
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                         }
                         if(enemy.bounds.overlaps(playerBounds)&&playerAnimationId!=2){
                             health-=1;
@@ -468,7 +564,7 @@ public static void initializeEnemyType(){
                             playerHurt=true;
                             Controllers.getControllers().first().startVibration(300,0.7f);
                             enemyList.removeValue(enemy,true);
-                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f,true));
+                            explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                             playerFPS=0.1f;
                         }
                     }
@@ -478,26 +574,29 @@ public static void initializeEnemyType(){
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
                                 projectileList.removeValue(proj,true);
-                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f,false));
+                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
                                 enemy.health-=3;
                                 projectileList.removeValue(proj,true);
-                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f,false));
+                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
                         }
                     }
-
-
 
                     if(!mouseControlActive)for(MobileButton btn : mobileButtonList){
                         btn.render(batch);
                         btn.button.setScale(btn.active?4.2f:4f);
                     }
+
+                    if(health<1){
+                        gameState=GameState.Over;
+                    }
+
                 }
                 if(drawingDialogue){
-                    currentLine = levels.get(currentLevel).get(storyLineIndex);
+                    currentLine = gameStory.get(currentLevel).get(storyLineIndex);
                     if(currentLine.choice!=null) {
                         if(currentLine.choice==StoryLine.choiceState.A){
                             currentLine=currentLine.choiceA;
@@ -532,8 +631,16 @@ public static void initializeEnemyType(){
             }break;
 
             case Load:{
-                titleFont.draw(batch,"SELECT SAVE",1280/2f-180,600);
+                batch.draw(bgTexture, 0, 0, 1280, 720);
+                titleFont.draw(batch,"SELECT SAVE",1280/2f-280,600);
                 for(LoadButton btn : loadButtonArray){
+                    btn.render(batch,timeElapsed);
+                }
+            }break;
+            case Over:{
+                batch.draw(bgTexture, 0, 0, 1280, 720);
+                titleFont.draw(batch,"GAME OVER",1280/2f-220,600);
+                for(OverButton btn : overButtonList){
                     btn.render(batch,timeElapsed);
                 }
             }break;
@@ -549,9 +656,9 @@ public static void initializeEnemyType(){
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.GREEN);
-        for(EnemyClass enemy : enemyList){
-            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
-        }
+//        for(EnemyClass enemy : enemyList){
+//            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
+//        }
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -570,9 +677,9 @@ public static void initializeEnemyType(){
 
     public static void setChoiceDepth(){
         if(choice==choiceState.A){
-            levels.get(currentLevel).get(storyLineIndex).choiceA.depth=calculateDepth(levels.get(currentLevel).get(storyLineIndex).choiceA);
+            gameStory.get(currentLevel).get(storyLineIndex).choiceA.depth=calculateDepth(gameStory.get(currentLevel).get(storyLineIndex).choiceA);
         }else{
-            levels.get(currentLevel).get(storyLineIndex).choiceB.depth=calculateDepth(levels.get(currentLevel).get(storyLineIndex).choiceB);
+            gameStory.get(currentLevel).get(storyLineIndex).choiceB.depth=calculateDepth(gameStory.get(currentLevel).get(storyLineIndex).choiceB);
         }
         lineDepth=0;
     }
@@ -630,6 +737,16 @@ public static void initializeEnemyType(){
             obj.draw(sb);
         }
     }
+
+    public static class EnemyWave{
+        public EnemyClass[] enemies;
+        public boolean endFight;
+        public EnemyWave(EnemyClass[] enemies,Boolean endFight){
+            this.enemies=enemies;
+            this.endFight=endFight;
+        }
+
+    }
     public static class StoryLine {
         public String message;
         public String byLine;
@@ -664,11 +781,31 @@ public static void initializeEnemyType(){
     }
 
 
+
+    public static class HealthBar{
+        public Sprite bar;
+        public int index;
+        public float width,scaleFactor=3f;
+        public HealthBar(float x,float y,TextureRegion[] sheet,int index){
+            bar=new Sprite(sheet[index]);
+            print(index);
+            this.index=index;
+            bar.setPosition(x,y);
+            bar.setSize(bar.getWidth()*scaleFactor,bar.getHeight()*scaleFactor);
+            width=bar.getWidth();
+        }
+        public void render(SpriteBatch sb){
+            if(index==1)bar.setSize(health*width/10f,bar.getHeight());
+            bar.draw(sb);
+        }
+    }
+
     public static class ExplosionEffect{
         private final ParticleEffect effects;
-        public ExplosionEffect(float x, float y,float scale,Boolean type){
+        public Boolean die=false;
+        public ExplosionEffect(float x, float y,float scale){
             effects = new ParticleEffect();
-            effects.load(files(type?"explosionFX.p":"bulletFX.p"),files(""));
+            effects.load(files("explosionFX.p"),files(""));
             effects.setPosition(x, y);
             effects.scaleEffect(scale);
             effects.start();
@@ -676,6 +813,7 @@ public static void initializeEnemyType(){
         public void render(SpriteBatch sb){
             effects.update(Gdx.graphics.getDeltaTime());
             effects.draw(sb,Gdx.graphics.getDeltaTime());
+            if(effects.isComplete())die=true;
         }
 
     }
@@ -849,6 +987,38 @@ public static void initializeEnemyType(){
         }
     }
 
+    public static class OverButton{
+        public final String name;
+        public int index;
+        public Rectangle bounds;
+        private final float x,y;
+        private float alpha;
+        private final BitmapFont font;
+
+        public OverButton(float y, String name, int index) {
+            this.font = new BitmapFont(files("joystix.fnt"));
+            GlyphLayout layout = new GlyphLayout(font, name);
+            this.x = (1280 - layout.width) / 2;
+            this.y = y;
+            this.name = name;
+            this.index = index;
+            this.bounds = new Rectangle(x, y - layout.height, layout.width, layout.height);
+        }
+
+        public void render(SpriteBatch batch, float timeElapsed) {
+            font.draw(batch, name, this.x, this.y);
+            if (index == overButtonActiveIndex) {
+                alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 3 * Math.PI));
+            }
+            font.setColor(1, 1, 1, index == overButtonActiveIndex ? alpha : 1);
+        }
+
+        public Boolean isTouching(Vector2 touch) {
+            return bounds.contains(touch);
+        }
+    }
+
+
     public static class LoadButton{
         public float y=720/3f,x,progress;
         public int index;
@@ -861,7 +1031,7 @@ public static void initializeEnemyType(){
             this.x=x;
             this.level=save.getInteger("level",0);
             this.kills=save.getInteger("klls",0);
-            this.health=save.getFloat("health",100);
+            this.health=save.getFloat("health",10);
             this.progress=level*100/6f;
             this.index=index;
             this.font=new BitmapFont(files("joystix.fnt"));
@@ -1098,7 +1268,7 @@ public static void initializeEnemyType(){
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-                        storyInitialize();
+                        initialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1108,6 +1278,20 @@ public static void initializeEnemyType(){
                     if(buttonCode==1){
                         gameState=gameStarted?GameState.Pause:GameState.Menu;
 //                        controller.startVibration(200, 0.7f);
+                    }
+                }break;
+                case Over:{
+                    if (buttonCode == 11) {
+                        if (overButtonActiveIndex > 0) overButtonActiveIndex--;
+                        else controller.startVibration(300, 0.5f);
+                    }
+                    if (buttonCode == 12) {
+                        if (overButtonActiveIndex < overButtonNames.length-1)
+                            overButtonActiveIndex++;
+                        else controller.startVibration(300, 0.5f);
+                    }
+                    if(buttonCode==0){
+                        handleOver();
                     }
                 }break;
                 case Play:{
@@ -1144,7 +1328,7 @@ public static void initializeEnemyType(){
                             choice=choiceState.B;
                         }
                         if(buttonCode==0){
-                            levels.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
+                            gameStory.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
                             choiceMode=false;
                             setChoiceDepth();
                         }
@@ -1181,6 +1365,7 @@ public static void initializeEnemyType(){
                     }
                 }
                 break;
+
                 case Load:{
                     if(axisCode==0){
                         if ((MathUtils.floor(value) == -1)) {
@@ -1189,6 +1374,18 @@ public static void initializeEnemyType(){
                         }
                         if ((MathUtils.floor(value) == 1)) {
                             if (loadButtonIndex < 2) loadButtonIndex++;
+                            else controller.startVibration(300, 0.5f);
+                        }
+                    }
+                }break;
+                case Over:{
+                    if (axisCode == 1) {
+                        if ((MathUtils.floor(value) == -1)) {
+                            if (overButtonActiveIndex > 0) overButtonActiveIndex--;
+                            else controller.startVibration(300, 0.5f);
+                        }
+                        if ((MathUtils.floor(value) == 1)) {
+                            if (overButtonActiveIndex < overButtonNames.length-1) overButtonActiveIndex++;
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -1319,6 +1516,16 @@ public static void initializeEnemyType(){
                         gameState=GameState.Play;
                     }
                 }break;
+                case Over:{
+                    if ((overButtonActiveIndex > 0) && (keycode == Input.Keys.UP||keycode == Input.Keys.W)) overButtonActiveIndex--;
+                    if ((overButtonActiveIndex < overButtonNames.length -1) &&(keycode == Input.Keys.DOWN||keycode == Input.Keys.W)) overButtonActiveIndex++;
+                    if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
+                        handleOver();
+                    }
+                    if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
+                        gameState=GameState.Menu;
+                    }
+                }break;
 
                 case Load:{
                     if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) && loadButtonIndex>0){
@@ -1337,7 +1544,7 @@ public static void initializeEnemyType(){
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
-                        storyInitialize();
+                        initialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
                     }
@@ -1374,7 +1581,7 @@ public static void initializeEnemyType(){
                             choice=choiceState.B;
                         }
                         if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
-                            levels.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
+                            gameStory.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
                             choiceMode=false;
                             setChoiceDepth();
                         }
@@ -1413,6 +1620,11 @@ public static void initializeEnemyType(){
                 case Load:{
                     for(LoadButton button : loadButtonArray){
                         if (button.object.getBoundingRectangle().contains(point)) loadButtonIndex= button.index;
+                    }
+                }break;
+                case Over:{
+                    for(OverButton button : overButtonList){
+                        if (button.isTouching(point)) overButtonActiveIndex = button.index;
                     }
                 }break;
                 case Pause:{
@@ -1508,6 +1720,11 @@ public static void initializeEnemyType(){
                         if (button.isTouching(point)) pauseButtonActiveIndex = button.index;
                     }
                 }break;
+                case Over:{
+                    for(OverButton button : overButtonList){
+                        if (button.isTouching(point)) overButtonActiveIndex = button.index;
+                    }
+                }break;
                 case Load: {
                     for (LoadButton btn : loadButtonArray) {
                         if (btn.object.getBoundingRectangle().contains(point)) {
@@ -1572,6 +1789,14 @@ public static void initializeEnemyType(){
                         }
                     }
                 }break;
+                case Over:{
+                    for (OverButton btn : overButtonList) {
+                        if (btn.isTouching(point)) {
+                            overButtonActiveIndex=btn.index;
+                            handleOver();
+                        }
+                    }
+                }break;
                 case Load:{
                     boolean exit=true;
                     for(LoadButton btn: loadButtonArray){
@@ -1585,7 +1810,7 @@ public static void initializeEnemyType(){
                             drawingText=true;
                             fight=false;
                             storyLineIndex=0;
-                            storyInitialize();
+                            initialize();
                             gameState=GameState.Play;
                             drawTextTime=10f;
                             exit=false;
@@ -1644,12 +1869,12 @@ public static void initializeEnemyType(){
                     }
                     if(choiceMode){
                         if(choiceABounds.contains(point)){
-                            levels.get(currentLevel).get(storyLineIndex).choice= StoryLine.choiceState.A;
+                            gameStory.get(currentLevel).get(storyLineIndex).choice= StoryLine.choiceState.A;
                             choiceMode=false;
                             setChoiceDepth();
                         }
                         if(choiceBBounds.contains(point)){
-                            levels.get(currentLevel).get(storyLineIndex).choice= StoryLine.choiceState.B;
+                            gameStory.get(currentLevel).get(storyLineIndex).choice= StoryLine.choiceState.B;
                             choiceMode=false;
                             setChoiceDepth();
                         }
