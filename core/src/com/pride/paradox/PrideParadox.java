@@ -48,11 +48,11 @@ public class PrideParadox extends ApplicationAdapter {
     public static GameState gameState = GameState.Menu;
     public static Vector3 touch,mousePos;
     public static Vector2 point;
-    public static Sprite player;
+    public static Sprite player,transition;
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
     public static Boolean playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
@@ -335,7 +335,8 @@ public class PrideParadox extends ApplicationAdapter {
                 new EnemyWave[]{
                         new EnemyWave(
                                 new EnemyClass[]{
-                                        new EnemyClass(Kid,0,0,300,30,0,3f)
+                                        new EnemyClass(Kid,0,0,300,300,0,3f),
+                                        new EnemyClass(Kid,0,0,300,600,0,3f),
                                 },false),
                         new EnemyWave(
                                 new EnemyClass[]{
@@ -494,6 +495,11 @@ public class PrideParadox extends ApplicationAdapter {
             index++;
         }
         playerBounds=new Circle(player.getX(),player.getY(),player.getRegionWidth()/2f);
+        transition=new Sprite(new Texture(files("transition.png")));
+        transition.setPosition(0,0);
+        transition.setSize(1280,720);
+
+
         createStory();
         initializeEnemyType();
         createWaves();
@@ -544,12 +550,7 @@ public class PrideParadox extends ApplicationAdapter {
                 }
                 if(fight){
 
-                    if(enemyList.size<1 && health>0) {
-                        drawingDialogue=true;
-                        drawingText=true;
-                        fight=false;
-                        drawTextTime=10f;
-                    }
+
 
                     for(HealthBar bar : healthBars)bar.render(batch);
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
@@ -602,7 +603,19 @@ public class PrideParadox extends ApplicationAdapter {
                     if(health<1){
                         gameState=GameState.Over;
                     }
-
+                    if(enemyList.size<1 && health>0) {
+                        print(MathUtils.round(transitionAlpha));
+                        transitionAlpha+=Gdx.graphics.getDeltaTime()/2f;
+                        transition.setAlpha(transitionAlpha);
+                        transition.draw(batch);
+                        if(1==MathUtils.floor(transitionAlpha)) {
+                            drawingDialogue = true;
+                            drawingText = true;
+                            fight = false;
+                            drawTextTime = 10f;
+                            transitionAlpha=0;
+                        }
+                    }
                 }
                 if(drawingDialogue){
                     currentLine = gameStory.get(currentLevel).get(storyLineIndex);
@@ -1277,6 +1290,7 @@ public class PrideParadox extends ApplicationAdapter {
                         fight=false;
                         drawTextTime=10f;
                         storyLineIndex=0;
+                        createStory();
                         initialize();
                         gameState=GameState.Play;
 
@@ -1553,6 +1567,7 @@ public class PrideParadox extends ApplicationAdapter {
                         drawingText=true;
                         fight=false;
                         storyLineIndex=0;
+                        createStory();
                         initialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
@@ -1819,6 +1834,7 @@ public class PrideParadox extends ApplicationAdapter {
                             drawingText=true;
                             fight=false;
                             storyLineIndex=0;
+                            createStory();
                             initialize();
                             gameState=GameState.Play;
                             drawTextTime=10f;
