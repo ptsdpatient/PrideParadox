@@ -116,7 +116,7 @@ public class PrideParadox extends ApplicationAdapter {
         Look,
         Move,
         Around,
-        Bounce, Rotate
+        Bounce, Turn, Rotate
     }
 
 
@@ -353,7 +353,9 @@ public class PrideParadox extends ApplicationAdapter {
                         new EnemyWave(
                                 new EnemyClass[]{
                                         new EnemyClass(Kid,0,0,false,45,1f),
+                                        new EnemyClass(Kid,1,0,true,0,1f),
                                         new EnemyClass(Kid,1,0,true,45,1f),
+                                        new EnemyClass(Kid,1,0,true,90,1f),
                                         new EnemyClass(Kid,0,0,false,45,1f),
                                 },false),
                         new EnemyWave(
@@ -402,11 +404,14 @@ public class PrideParadox extends ApplicationAdapter {
         animation.add(
                 new EnemyAnimation[]{
                         new EnemyAnimation(FollowPlayer.type,20,5),
-                        new EnemyAnimation(EnemyActionType.Bounce,20,5)
+                        new EnemyAnimation(EnemyActionType.Bounce,50,3),
+                        new EnemyAnimation(EnemyActionType.Attack,2,3),
+                        new EnemyAnimation(EnemyActionType.Look,10,3)
                 },
                 new EnemyAnimation[]{
-                        new EnemyAnimation(EnemyActionType.Attack,10,100),
-                        new EnemyAnimation(StayAround.type,10,3),
+                        new EnemyAnimation(EnemyActionType.Attack,10,4),
+                        new EnemyAnimation(EnemyActionType.Look,1,2),
+                        new EnemyAnimation(StayAround.type,10,200),
                 }
         );
         print(animation.get(1)[0].type+"");
@@ -478,7 +483,7 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         FollowPlayer=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Look,EnemyActionType.Move}));
-        StayAround=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Around,EnemyActionType.Rotate}));
+        StayAround=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Around,EnemyActionType.Turn}));
 
 
         player=new Sprite(playerAnimation.get(0).getKeyFrame(0));
@@ -552,7 +557,6 @@ public class PrideParadox extends ApplicationAdapter {
     @Override
     public void render() {
         ScreenUtils.clear(0, 0, 0, 1);
-
         timeElapsed += Gdx.graphics.getDeltaTime();
         camera.update();
         camera.position.set(1280 / 2f, 720 / 2f, 0);
@@ -613,6 +617,7 @@ public class PrideParadox extends ApplicationAdapter {
                             health-=1;
                             playerAnimationId=2;
                             playerHurt=true;
+                            Gdx.input.vibrate(300);
                             if(Controllers.getControllers().size>0)Controllers.getControllers().first().startVibration(300,0.7f);
                             enemyList.removeValue(enemy,true);
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
@@ -629,7 +634,7 @@ public class PrideParadox extends ApplicationAdapter {
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
-                                enemy.health-=3;
+                                enemy.health-=1.5f;
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
@@ -735,10 +740,13 @@ public class PrideParadox extends ApplicationAdapter {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.GREEN);
-//        for(EnemyClass enemy : enemyList){
-//            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
-//        }
+
+        for(EnemyClass enemy : enemyList){
+            shapeRenderer.setColor(Color.GREEN);
+            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
+            shapeRenderer.setColor(Color.BLUE);
+            shapeRenderer.rect(enemy.object.getX(),enemy.object.getY(),enemy.object.getWidth(),enemy.object.getHeight());
+        }
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -1034,7 +1042,7 @@ public class PrideParadox extends ApplicationAdapter {
         public Circle bounds;
         public Array<EnemyAnimation> animationList= new Array<>();
         public Vector2 velocity=new Vector2(3,3),accelerationVector=new Vector2(3,3);
-        public float health=10;
+        public float health=3;
         public EnemyClass(EnemyType type,int animationIndex ,int index,Boolean inside,float rotation,float scaleFactor){
             object=new Sprite(type.texture[index]);
             object.setRotation(rotation);
@@ -1050,10 +1058,10 @@ public class PrideParadox extends ApplicationAdapter {
                         object.setPosition(320+object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
                     }break;
                     case 1:{
-                        object.setPosition(960-object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(960,MathUtils.random(120+object.getHeight(),600-object.getHeight()));
                     }break;
                     case 2:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600-object.getHeight());
+                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
 
                     }break;
                     case 3:{
@@ -1066,11 +1074,10 @@ public class PrideParadox extends ApplicationAdapter {
                         object.setPosition(320-object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
                     }break;
                     case 1:{
-                        object.setPosition(960+object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(960,MathUtils.random(120+object.getHeight(),600-object.getHeight()));
                     }break;
                     case 2:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600+object.getHeight());
-
+                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
                     }break;
                     case 3:{
                         object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),120-object.getHeight());
@@ -1100,19 +1107,22 @@ public class PrideParadox extends ApplicationAdapter {
                             facePlayer();
                         }break;
                         case Move:{
-                            movePlayer(2);
+                            move(parameter);
                         }break;
                         case Around:{
                             stayAroundPlayer(parameter);
+                        }break;
+                        case Turn:{
+                            rotate();
                         }break;
                         case Rotate:{
                             rotate(parameter);
                         }break;
                         case Attack:{
-                            attackPlayer();
+                            attack(parameter);
                         }break;
                         case Bounce:{
-                            rebound();
+                            rebound(parameter);
                         }break;
                     }
                 }
@@ -1120,6 +1130,8 @@ public class PrideParadox extends ApplicationAdapter {
 //                    print("pop");
                     animationList.pop();
                 }
+            }else{
+                health=0;
             }
             bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
             object.draw(batch);
@@ -1140,49 +1152,53 @@ public class PrideParadox extends ApplicationAdapter {
             object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)));
         }
 
-        public  void stayAroundPlayer(float degree){
-            deltaX = (player.getX() + player.getWidth()/2)-(object.getWidth()/2f)+100f*(float) Math.cos(MathUtils.degreesToRadians*(object.getRotation()+degree));
-            deltaY = (player.getY() + player.getHeight()/2)-(object.getHeight()/2f)+100f*(float) Math.sin(MathUtils.degreesToRadians*(object.getRotation()+degree));
+        public  void stayAroundPlayer(float distance){
+            deltaX = (player.getX() + player.getWidth()/2)-(object.getWidth()/2f)+distance*(float) Math.cos(MathUtils.degreesToRadians*(object.getRotation()));
+            deltaY = (player.getY() + player.getHeight()/2)-(object.getHeight()/2f)+distance*(float) Math.sin(MathUtils.degreesToRadians*(object.getRotation()));
             object.setPosition(deltaX, deltaY);
         }
-        public void movePlayer(float speed){
+        public void move(float speed){
             object.setPosition(object.getX() + speed * MathUtils.cosDeg(object.getRotation()), object.getY() + speed * MathUtils.sinDeg(object.getRotation()));
         }
 
         public void rotate(float amplitude){
             object.rotate(amplitude);
         }
-        public void attackPlayer(){
-            accelerationVector = new Vector2((float) Math.cos( (float) Math.toRadians(object.getRotation())), (float) Math.sin( (float) Math.toRadians(object.getRotation()))).scl(2f * Gdx.graphics.getDeltaTime());
-            velocity.add(accelerationVector);
-            object.translate(velocity.x * Gdx.graphics.getDeltaTime(),velocity.y * Gdx.graphics.getDeltaTime());
+        public void rotate(){
+            object.rotate(4f);
         }
-        public void rebound(){
-            movePlayer(3f);
+        public void attack(float parameter){
+            object.translate(parameter*MathUtils.cos(MathUtils.degreesToRadians*object.getRotation()),parameter*MathUtils.sin(MathUtils.degreesToRadians*object.getRotation()));
+        }
+        public void rebound(float parameter){
+            move(parameter);
             for(ArenaBounds bounds : arenaBounds){
                 if(object.getBoundingRectangle().overlaps(bounds.getBounds())){
-                    float randomAngleAdjustment = MathUtils.random(0, 45);
+                    float randomAngle=MathUtils.random(-30,30);
                     switch(bounds.name){
                         case "left":{
-                            object.setRotation(180 - object.getRotation() + randomAngleAdjustment);
-                            object.setX(320 + object.getWidth() + 3f);
+                            object.setRotation(180 - object.getRotation()+randomAngle);
+                            object.setX(320 + object.getWidth()/2f + 3f);
                         } break;
                         case "right":{
-                            object.setRotation(180 - object.getRotation() + randomAngleAdjustment);
-                            object.setX(960 - object.getWidth() - 3f);
+                            object.setRotation(180 - object.getRotation()+randomAngle);
+                            object.setX(960 - object.getWidth() -3f);
                         } break;
                         case "up":{
-                            object.setRotation(-object.getRotation() + randomAngleAdjustment);
-                            object.setY(600 - object.getHeight() - 3f);
+                            object.setRotation(-object.getRotation()+randomAngle);
+                            object.setY(600 - object.getHeight()-3f);
                         } break;
                         case "down":{
-                            object.setRotation(-object.getRotation() + randomAngleAdjustment);
-                            object.setY(120 + object.getHeight() + 3f);
+                            object.setRotation(-object.getRotation()+randomAngle);
+                            object.setY(120 + object.getHeight()/2f + 3f);
                         } break;
                     }
-                    movePlayer(7f);
+                    move(parameter);
                 }
             }
+
+
+
         }
         public void waveHorizontal(){
             object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.sin(time * 2));
