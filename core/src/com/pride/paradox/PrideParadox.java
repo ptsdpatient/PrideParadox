@@ -52,9 +52,9 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
-    public static Boolean playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
+    public static Boolean gameSaved=false,playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<OverButton> overButtonList =new Array<>();
     public static Array<ExplosionEffect> explosionList=new Array<>();
@@ -75,7 +75,7 @@ public class PrideParadox extends ApplicationAdapter {
     public InputProcessor input;
     public Texture menuBG;
     public Texture cursorTexture;
-    public Texture gamepadConnect;
+    public Texture gamepadConnect,gameSave;
     public Texture htp;
     public Texture arena;
     public Texture bgTexture;
@@ -213,6 +213,8 @@ public class PrideParadox extends ApplicationAdapter {
         gameSaves[saveIndex].putFloat("health",health!=0?health:10);
         gameSaves[saveIndex].putInteger("kills",kills);
         gameSaves[saveIndex].flush();
+        gameSaved=true;
+        gameSavedTime=0;
     }
     public static void handlePause(){
         switch (pauseButtonActiveIndex) {
@@ -446,10 +448,12 @@ public class PrideParadox extends ApplicationAdapter {
         background = new Texture(files("dialogue.png"));
         arena=new Texture(files("arena.png"));
         bgTexture=new Texture(files("bg.png"));
+        gameSave=new Texture(files("game-saved.png"));
 
         for(String name: arenaBoundNames) arenaBounds.add(new ArenaBounds(name));
 
         dialogueFont.getData().setScale(0.85f);
+        choiceFont.getData().setScale(1.25f);
 
         choiceABounds=new Rectangle(120,720/2f,1280/3f,100);
         choiceBBounds=new Rectangle(1280-120-1280/3f,720/2f,1280/3f,100);
@@ -518,19 +522,25 @@ public class PrideParadox extends ApplicationAdapter {
         transition.setPosition(0,0);
         transition.setSize(1280,720);
 
-        leftChar=new Sprite();
-        rightChar=new Sprite();
+        leftChar=new Sprite(new Texture(files("empty.png")));
+        rightChar=new Sprite(new Texture(files("empty.png")));
 
-        leftChar.setPosition(0,0);
-        leftChar.setSize(250,500);
-
-        rightChar.setPosition(1280,0);
-        rightChar.setSize(250,500);
 
         createStory();
         initializeEnemyType();
         createWaves();
         initialize();
+
+//        leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
+
+        leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
+        leftChar.setPosition(0,0);
+
+        rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
+        rightChar.setPosition(1280-rightChar.getWidth(),0);
+
+        rightChar.setFlip(true,false);
+
     }
 
     @Override
@@ -615,7 +625,7 @@ public class PrideParadox extends ApplicationAdapter {
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
                                 projectileList.removeValue(proj,true);
-                                explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
+                                explosionList.add(new ExplosionEffect((Objects.equals(bounds.name, "right"))?proj.obj.getX()+proj.obj.getWidth():proj.obj.getX(),(Objects.equals(bounds.name, "up"))?proj.obj.getY()+proj.obj.getHeight():proj.obj.getY(),0.2f));
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
@@ -713,6 +723,14 @@ public class PrideParadox extends ApplicationAdapter {
             controllerConectTime += Gdx.graphics.getDeltaTime();
         }
 
+        if (gameSaved && gameSavedTime < 3f) {
+            batch.draw(gameSave, 950, 570);
+            gameSavedTime += Gdx.graphics.getDeltaTime();
+            if(gameSavedTime>3f){
+                gameSaved=false;
+            }
+        }
+
         batch.end();
 
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -744,6 +762,14 @@ public class PrideParadox extends ApplicationAdapter {
                 rightChar.setTexture(new Texture(files(currentLine.renderAddress)));
             }break;
         }
+        leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
+        leftChar.setPosition(0,0);
+
+        rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
+        rightChar.setPosition(1280-rightChar.getWidth(),0);
+
+        rightChar.setFlip(true,false);
+
     }
 
     @Override
@@ -761,43 +787,53 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static void initializeImages(){
+//        print("hello");
         switch (currentLevel){
             case 0:{
                 gameBG=new Texture(files("riots.jpeg"));
-                leftChar.setTexture(new Texture(files("empty.png")));
-                rightChar.setTexture(new Texture(files("man.png")));
+                leftChar=new Sprite(new Texture(files("doctor-stand.png")));
+                rightChar=new Sprite(new Texture(files("man-stand.png")));
             }break;
             case 1:{
                 gameBG=new Texture(files("ground.jpeg"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("kid-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("kid-stand.png")));
             }break;
             case 2:{
                 gameBG=new Texture(files("dog-bg.png"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("dog-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("dog-stand.png")));
             }break;
             case 3:{
                 gameBG=new Texture(files("clinic.jpeg"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("doctor-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("doctor-stand.png")));
             }break;
             case 4:{
                 gameBG=new Texture(files("city.png"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("scammer-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("scammer-stand.png")));
             }break;
             case 5:{
                 gameBG=new Texture(files("campaign.jpeg"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("politician-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("politician-stand.png")));
             }break;
             case 6:{
                 gameBG=new Texture(files("talkshow.jpeg"));
-                leftChar.setTexture(new Texture(files("player-stand.png")));
-                rightChar.setTexture(new Texture(files("bot-stand.png")));
+                leftChar=new Sprite(new Texture(files("player-stand.png")));
+                rightChar=new Sprite(new Texture(files("bot-stand.png")));
             }break;
         }
+
+        leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
+        leftChar.setPosition(0,0);
+
+        rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
+        rightChar.setPosition(1280-rightChar.getWidth(),0);
+
+        rightChar.setFlip(true,false);
+
     }
 
     public static class ArenaBounds{
