@@ -149,10 +149,11 @@ public class PrideParadox extends ApplicationAdapter {
     }
     public static void createStory(){
         gameStory.clear();
+        gameStory=new Array<>();
         gameStory.add(new Array<>());
-        gameStory.get(currentLevel).add(new StoryLine("Select your gender! ","Narrator",new StoryLine("Female", "2.",new StoryLine("you selected female","narrator",new StoryLine("Good choice you are not misogyinist","narrator",true))),new StoryLine("Male","1.",new StoryLine("you selected male","narrator",true))));
-        gameStory.get(currentLevel).add(new StoryLine("Hello there! My name is Tanishq!","Narator",new StoryLine("Niggesh do not toy with me jhajajajaja","sus",new StoryLine("what shit oh no!","what the ",new StoryLine("heheheh haw","heehehe",false)))));
-        gameStory.get(currentLevel).add(new StoryLine("Imam gadzhi!","Narator",new StoryLine("Trisha takanava","sus",new StoryLine("Niggesh forever!","what the ",new StoryLine("i hate bjp","heehehe",false)))));
+        gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who is gay and faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"funeral.jpeg"))))))),RenderWhat.BG,"riots.jpeg")))));
+        gameStory.get(0).add(new StoryLine("One day, he learns about a time machine experiment in an underground lab in China.",new StoryLine("Determined to prevent his child's fate, he uses his software skills to bypass security and access the time machine.",new StoryLine("Without hesitation, the protagonist travels back 32 years to 2015, finding himself in his younger body.",new StoryLine("He is determined to change the course of history and ensure a future where his child and all LGBTQ+ individuals are accepted and valued.",new StoryLine("Tanishq : This is unbelievable! I am finally back in past! I feel so young... is this my home?",new StoryLine("Tanishq : Judging by my home decoration, I think i am somewhere between 2012 and 2016.",new StoryLine("Tanishq : I should head out, i don't want anyone noticing me as an adult. Also, how will i go back to the future!?",new StoryLine("*You get out of your home to find out the fresh breeze outside",new StoryLine("Tanishq : Wow i missed this place so much!",false),RenderWhat.BG,"dog-bg.jpeg"),RenderWhat.BG,"empty.png")),RenderWhat.BG,"house.jpeg"),RenderWhat.Left,"player-stand.png"),RenderWhat.BG,"time.jpg"),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"lab.jpeg"));
+
 
     }
     public void drawChoice(SpriteBatch batch,StoryLine line){
@@ -163,7 +164,7 @@ public class PrideParadox extends ApplicationAdapter {
         choiceFont.draw(batch,line.choiceB.message,choiceBBounds.x,choiceBBounds.y+choiceBBounds.height-10f,choiceBBounds.width, Align.center,true);
     }
     public void drawText(SpriteBatch batch, StoryLine line){
-        dialogueMessage=line.byLine+" : "+line.message;
+        dialogueMessage=line.message;
         if(drawTextTime<0.01){
             drawTextTime+=Gdx.graphics.getDeltaTime();
         }else {
@@ -195,7 +196,7 @@ public class PrideParadox extends ApplicationAdapter {
             }
         }
         batch.draw(background,1280/2f-500,0,1000,800);
-        if(drawingText)dialogueFont.draw(batch,typewriter,230,220,800, Align.topLeft,true);
+        if(drawingText)dialogueFont.draw(batch,typewriter,230,235,800, Align.topLeft,true);
     }
 
     public static int calculateDepth(StoryLine storyLine){
@@ -457,7 +458,7 @@ public class PrideParadox extends ApplicationAdapter {
 
         for(String name: arenaBoundNames) arenaBounds.add(new ArenaBounds(name));
 
-        dialogueFont.getData().setScale(0.85f);
+        dialogueFont.getData().setScale(0.95f);
         choiceFont.getData().setScale(1.25f);
 
         choiceABounds=new Rectangle(120,720/2f,1280/3f,100);
@@ -484,7 +485,6 @@ public class PrideParadox extends ApplicationAdapter {
 
         FollowPlayer=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Look,EnemyActionType.Move}));
         StayAround=new EnemyAction(new Array<>(new EnemyActionType[]{EnemyActionType.Around,EnemyActionType.Turn}));
-
 
         player=new Sprite(playerAnimation.get(0).getKeyFrame(0));
         player.setPosition(1280/2f,720/2f);
@@ -764,10 +764,10 @@ public class PrideParadox extends ApplicationAdapter {
                 gameBG=new Texture(files(currentLine.renderAddress));
             }break;
             case Left:{
-                leftChar.setTexture(new Texture(files(currentLine.renderAddress)));
+                leftChar=new Sprite(new Texture(files(currentLine.renderAddress)));
             }break;
             case Right :{
-                rightChar.setTexture(new Texture(files(currentLine.renderAddress)));
+                rightChar=new Sprite(new Texture(files(currentLine.renderAddress)));
             }break;
         }
         leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
@@ -798,9 +798,9 @@ public class PrideParadox extends ApplicationAdapter {
 //        print("hello");
         switch (currentLevel){
             case 0:{
-                gameBG=new Texture(files("riots.jpeg"));
-                leftChar=new Sprite(new Texture(files("doctor-stand.png")));
-                rightChar=new Sprite(new Texture(files("man-stand.png")));
+                gameBG=new Texture(files("empty.png"));
+                leftChar=new Sprite(new Texture(files("empty.png")));
+                rightChar=new Sprite(new Texture(files("empty.png")));
             }break;
             case 1:{
                 gameBG=new Texture(files("ground.jpeg"));
@@ -908,7 +908,6 @@ public class PrideParadox extends ApplicationAdapter {
     }
     public static class StoryLine {
         public String message;
-        public String byLine;
         public Boolean fightState=false;
         public int depth=0;
         public StoryLine choiceA=null,choiceB=null;
@@ -921,30 +920,26 @@ public class PrideParadox extends ApplicationAdapter {
             B,
         }
         choiceState choice=null;
-        public StoryLine(String message, String byLine,Boolean fightState) {
+        public StoryLine(String message,Boolean fightState) {
             this.message = message.toUpperCase();
-            this.byLine = byLine.toUpperCase();
             this.fightState=fightState;
         }
-        public StoryLine(String message, String byLine, StoryLine choiceA) {
+        public StoryLine(String message, StoryLine choiceA) {
             this.message = message.toUpperCase();
-            this.byLine = byLine.toUpperCase();
             this.choiceA = choiceA;
 //            print(depth);
         }
 
-        public StoryLine(String message, String byLine, StoryLine choiceA,RenderWhat renderWho,String input) {
+        public StoryLine(String message, StoryLine choiceA,RenderWhat renderWho,String input) {
             this.message = message.toUpperCase();
-            this.byLine = byLine.toUpperCase();
             this.choiceA = choiceA;
             this.renderWho=renderWho;
             this.renderAddress=input;
 //            print(depth);
         }
 
-        public StoryLine(String message, String byLine, StoryLine choiceA, StoryLine choiceB) {
+        public StoryLine(String message, StoryLine choiceA, StoryLine choiceB) {
             this.message = message.toUpperCase();
-            this.byLine = byLine.toUpperCase();
             this.choiceA = choiceA;
             this.choiceB = choiceB;
             choice=choiceState.Nill;
