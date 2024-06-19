@@ -52,8 +52,8 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
-    public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=0,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
+    public static float score,transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=-1,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
     public static Boolean gameSaved=false,playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<OverButton> overButtonList =new Array<>();
@@ -105,20 +105,9 @@ public class PrideParadox extends ApplicationAdapter {
     public static FileHandle files(String input){
         return Gdx.files.internal(input);
     }
-    public enum RenderWhat{
-        Left,
-        BG,
-        Right
-    }
+    public enum RenderWhat{Left,BG,Right}
 
-    public enum EnemyActionType{
-        Attack,
-        Look,
-        Move,
-        Around,
-        Bounce, Turn, Rotate
-    }
-
+    public enum EnemyActionType{Attack,Look,Move,Around, Bounce, Turn, Fall, Target, Rotate}
 
 
     public static void handleOver(){
@@ -138,7 +127,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
     public static void loadGame(int saveIndex){
         currentLevel=gameSaves[saveIndex].getInteger("level",0);
-        health=gameSaves[saveIndex].getFloat("health",10);
+        health=gameSaves[saveIndex].getFloat("score",0);
         kills=gameSaves[saveIndex].getInteger("kills",0);
         if(health==0)health=10;
     }
@@ -151,10 +140,10 @@ public class PrideParadox extends ApplicationAdapter {
         gameStory.clear();
         gameStory=new Array<>();
         gameStory.add(new Array<>());
-        gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who is bisexual and faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"funeral.jpeg"))))))),RenderWhat.BG,"riots.jpeg")))));
+        gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who has identified himself as a bisexual but faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"funeral.jpeg"))))))),RenderWhat.BG,"riots.jpeg")))));
         gameStory.get(0).add(new StoryLine("One day, he learns about a time machine experiment in an underground lab in China.",new StoryLine("Determined to prevent his child's fate, he uses his software skills to bypass security and access the time machine.",new StoryLine("Without hesitation, the protagonist travels back 32 years to 2015, finding himself in his younger body.",new StoryLine("He is determined to change the course of history and ensure a future where his child and all LGBTQ+ individuals are accepted and valued.",new StoryLine("Tanishq : This is unbelievable! I am finally back in past! I feel so young... is this my home?",new StoryLine("Tanishq : Judging by my home decoration, I think i am somewhere between 2012 and 2016.",new StoryLine("Tanishq : I should head out, i don't want anyone noticing me as an adult. Also, how will i go back to the future!?",new StoryLine("*You get out of your home to find out the fresh breeze outside",new StoryLine("Tanishq : Wow i missed this place so much!",false),RenderWhat.BG,"dog-bg.jpeg"),RenderWhat.BG,"empty.png")),RenderWhat.BG,"house.jpeg"),RenderWhat.Left,"player-stand.png"),RenderWhat.BG,"time.jpg"),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"lab.jpeg"));
-
-
+        gameStory.get(0).add(new StoryLine("Tanishq : What the hell is that huge dog!!",new StoryLine("Dog : Woof! Woof! (Oh my god a human, will he play with me?)",new StoryLine("Tanishq : Um Sho Shoo get lost dog! Where is your owner? Where is your belt?!",new StoryLine("Dog : Woof!! (This guy looks like he is weak, lets bully him)",new StoryLine("The dog has become aggressive! You must use your power of righteousness to get away from this dog!",true)))),RenderWhat.Right,"dog-stand.png"));
+        gameStory.get(0).add(new StoryLine("Dog : Woof! (You are quite strong compared to your size)",new StoryLine("Tanishq : What kind of dog is this? He gives such massive shits!!",true)));
     }
     public void drawChoice(SpriteBatch batch,StoryLine line){
         float alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
@@ -187,6 +176,8 @@ public class PrideParadox extends ApplicationAdapter {
                     typewriterIndex=0;
                     drawTextTime=10f;
                     if(line.fightState){
+                        currentWave++;
+                        initializeLevel(currentLevel,currentWave);
                         fight=true;
                         drawingText=false;
                         drawingDialogue=false;
@@ -211,7 +202,7 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void saveGame(int saveIndex){
         gameSaves[saveIndex].putInteger("level",currentLevel);
-        gameSaves[saveIndex].putFloat("health",health!=0?health:10);
+        gameSaves[saveIndex].putFloat("score",score);
         gameSaves[saveIndex].putInteger("kills",kills);
         gameSaves[saveIndex].flush();
         gameSaved=true;
@@ -284,7 +275,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static void initialize(){
         initializeEnemyType();
         initializeStory();
-        initializeLevel(currentLevel,currentWave);
+//        initializeLevel(currentLevel,currentWave);
         initializeImages();
     }
     public static void drawPlayer(SpriteBatch batch){
@@ -326,7 +317,7 @@ public class PrideParadox extends ApplicationAdapter {
             player.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             for(ArenaBounds bounds:arenaBounds){
                 if(bounds.bounds.overlaps(player.getBoundingRectangle())){
-                    player.translate(-2.5f*amplitude* MathUtils.cos(radians),-2.5f*amplitude* MathUtils.sin(radians));
+                    player.translate(-4f*amplitude* MathUtils.cos(radians),-4f*amplitude* MathUtils.sin(radians));
                 }
             }
         }
@@ -353,15 +344,31 @@ public class PrideParadox extends ApplicationAdapter {
                 new EnemyWave[]{
                         new EnemyWave(
                                 new EnemyClass[]{
-                                        new EnemyClass(Kid,0,0,false,45,1f),
-                                        new EnemyClass(Kid,1,0,true,0,1f),
-                                        new EnemyClass(Kid,1,0,true,45,1f),
-                                        new EnemyClass(Kid,1,0,true,90,1f),
-                                        new EnemyClass(Kid,0,0,false,45,1f),
-                                },false),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,0,2,false,0,MathUtils.random(1,2.5f)),
+                                },true),
                         new EnemyWave(
                                 new EnemyClass[]{
-                                        new EnemyClass(Kid,0,0,true,30,3f)
+                                        new EnemyClass(Dog,1,MathUtils.random(0,1),true,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,1,MathUtils.random(0,1),true,0,MathUtils.random(1,2.5f)),
+                                        new EnemyClass(Dog,1,MathUtils.random(0,1),true,0,MathUtils.random(1,2.5f))
+
                                 },false),
                         new EnemyWave(
                                 new EnemyClass[]{
@@ -376,7 +383,11 @@ public class PrideParadox extends ApplicationAdapter {
                 new EnemyWave[]{
                         new EnemyWave(
                                 new EnemyClass[]{
-                                        new EnemyClass(Kid,0,0,true,30,3f)
+                                        new EnemyClass(Kid,0,0,false,45,1f),
+                                        new EnemyClass(Kid,1,0,true,0,1f),
+                                        new EnemyClass(Kid,1,0,true,45,1f),
+                                        new EnemyClass(Kid,1,0,true,90,1f),
+                                        new EnemyClass(Kid,0,0,false,45,1f),
                                 },false)
                 }
         );
@@ -415,10 +426,23 @@ public class PrideParadox extends ApplicationAdapter {
                         new EnemyAnimation(StayAround.type,10,200),
                 }
         );
-        print(animation.get(1)[0].type+"");
-        Kid=new EnemyType(extractSprites("kid.png",64,64),animation);
+//        print(animation.get(1)[0].type+"");
+        Kid=new EnemyType(extractSprites("kid.png",64,64),animation,"kid");
 
-;
+        animation.clear();
+        animation.add(
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.Fall,30,0),
+                        new EnemyAnimation(EnemyActionType.Fall,30,0)
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.Target,20,0),
+                        new EnemyAnimation(EnemyActionType.Target,20,0)
+                }
+        );
+
+        Dog=new EnemyType(extractSprites("dog.png",32,32),animation,"dog");
+
     }
 
 
@@ -986,10 +1010,14 @@ public class PrideParadox extends ApplicationAdapter {
     public static class EnemyType{
         public TextureRegion[] texture;
         Array<EnemyAnimation[]> animations;
-        public EnemyType(TextureRegion[] spriteSheet,Array<EnemyAnimation[]> animations){
+        public String name;
+        public EnemyType(TextureRegion[] spriteSheet,Array<EnemyAnimation[]> animations,String name){
+            this.name=name;
             this.texture=spriteSheet;
             this.animations=animations;
         }
+
+
     }
 
     public static class EnemyAction{
@@ -1031,12 +1059,16 @@ public class PrideParadox extends ApplicationAdapter {
     }
 
     public static class EnemyClass{
-        public float alpha=0,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,gravity = -500,scaleFactor=0f;
-        public float time=0,parameter=0;
+        public float alpha=0,deltaX,deltaY,initialVelocityX = 200,initialVelocityY = 300,scaleFactor;
+        public float time=0,parameter=0,delay=-1;
+        public int animationIndex;
+        public String name;
         public Sprite object;
         public Circle bounds;
+        private Vector2 position=new Vector2(0,0);
+        private Vector2 velocity=new Vector2(0,0);
+        private Vector2 gravity=new Vector2(0,0);
         public Array<EnemyAnimation> animationList= new Array<>();
-        public Vector2 velocity=new Vector2(3,3),accelerationVector=new Vector2(3,3);
         public float health=3;
         public EnemyClass(EnemyType type,int animationIndex ,int index,Boolean inside,float rotation,float scaleFactor){
             object=new Sprite(type.texture[index]);
@@ -1044,6 +1076,8 @@ public class PrideParadox extends ApplicationAdapter {
             animationList.addAll(type.animations.get(animationIndex));
             object.setSize(object.getWidth()*scaleFactor,object.getHeight()*scaleFactor);
             object.setOriginCenter();
+            this.name=type.name;
+            this.animationIndex=animationIndex;
             this.scaleFactor=scaleFactor;
             this.bounds=new Circle(object.getX()+ object.getWidth()/2f,object.getY()+object.getHeight()/2f,object.getRegionWidth()*scaleFactor/2f);
             int decideSide=MathUtils.random(0,3);
@@ -1057,7 +1091,6 @@ public class PrideParadox extends ApplicationAdapter {
                     }break;
                     case 2:{
                         object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
-
                     }break;
                     case 3:{
                         object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),120+object.getHeight());
@@ -1079,6 +1112,28 @@ public class PrideParadox extends ApplicationAdapter {
                     }break;
                 }
             }
+            switch (type.name){
+                case "dog":{
+                    if(animationIndex==0){
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
+                        delay=MathUtils.random(3,20);
+                        position = new Vector2(object.getX(), object.getY());
+                        velocity = new Vector2(0, 0);
+                        gravity = new Vector2(0, -9.8f*MathUtils.random(1.0f,3.5f));
+                    }
+                    if(animationIndex==1){
+                        object.scale(scaleFactor+MathUtils.random(0.1f,2f));
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),MathUtils.random(120,600-object.getHeight()));
+                        delay=MathUtils.random(5,30);
+                    }
+                }break;
+                case "kid":{
+
+                }break;
+            }
+
 //            object.setPosition(500,400);
 //            print(object.getX()+" : "+object.getY());
         }
@@ -1087,19 +1142,24 @@ public class PrideParadox extends ApplicationAdapter {
         public void render(SpriteBatch batch) {
             time+=Gdx.graphics.getDeltaTime();
 
-            if(alpha!=1f){
-                alpha+=Gdx.graphics.getDeltaTime();
-                if(MathUtils.floor(alpha)==1)alpha=1f;
-                object.setAlpha(alpha);
-            }
-
             if(animationList.notEmpty()){
-                animationList.peek().update();
+                if(alpha!=1f&&delay<0){
+                    alpha+=Gdx.graphics.getDeltaTime();
+                    if(MathUtils.floor(alpha)==1)alpha=1f;
+                    object.setAlpha(alpha);
+                }
+                if((!Objects.equals(name, "dog") &&animationIndex==0))animationList.peek().update();
                 for(EnemyActionType type :  animationList.peek().type){
                     parameter=animationList.peek().parameter;
                     switch(type){
+                        case Target:{
+                            target();
+                        }
+                        case Fall:{
+                            fall();
+                        }break;
                         case Look :{
-                            facePlayer();
+                            facePlayer(parameter);
                         }break;
                         case Move:{
                             move(parameter);
@@ -1122,7 +1182,6 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                 }
                 if(animationList.peek().duration<0){
-//                    print("pop");
                     animationList.pop();
                 }
             }else{
@@ -1137,14 +1196,36 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         //methods
-        public void facePlayer(){
+        public void target(){
+            if(delay>0) delay-=Gdx.graphics.getDeltaTime();
+            if(object.getScaleX()<scaleFactor){
+                object.scale(-0.025f);
+            }
+        }
+        public void facePlayer(float parameter){
             float playerCenterX = player.getX() + player.getWidth() / 2;
             float playerCenterY = player.getY() + player.getHeight() / 2;
             float objectCenterX = object.getX() + object.getWidth() / 2;
             float objectCenterY = object.getY() + object.getHeight() / 2;
             deltaX = playerCenterX - objectCenterX;
             deltaY = playerCenterY - objectCenterY;
-            object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)));
+            object.setRotation(parameter * (float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)));
+        }
+
+        public void fall (){
+            if(delay>0) delay-=Gdx.graphics.getDeltaTime();
+            if(delay<0){
+                velocity.add(gravity.x * Gdx.graphics.getDeltaTime(), gravity.y * Gdx.graphics.getDeltaTime());
+                position.add(velocity.x * Gdx.graphics.getDeltaTime(), velocity.y * Gdx.graphics.getDeltaTime());
+                object.setPosition(position.x, position.y);
+            }
+            for(ArenaBounds bounds : arenaBounds){
+                if(object.getBoundingRectangle().overlaps(bounds.getBounds())){
+                    if(Objects.equals(bounds.name, "down")){
+                        health=-1;
+                    }
+                }
+            }
         }
 
         public  void stayAroundPlayer(float distance){
@@ -1209,12 +1290,12 @@ public class PrideParadox extends ApplicationAdapter {
         }
         public void throwHorizontal(float initialVelocityY){
             deltaX = initialVelocityX * time;
-            deltaY = Gdx.graphics.getHeight() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
+            deltaY = Gdx.graphics.getHeight() / 2f + initialVelocityY * time + 0.5f * gravity.y * time * time;
             object.setPosition(deltaX, deltaY);
         }
         public void throwVertical(float initialVelocityX){
             deltaY = initialVelocityX * time;
-            deltaX = Gdx.graphics.getWidth() / 2f + initialVelocityY * time + 0.5f * gravity * time * time;
+            deltaX = Gdx.graphics.getWidth() / 2f + initialVelocityY * time + 0.5f * gravity.x * time * time;
             object.setPosition(deltaX, deltaY);
         }
     }
@@ -1276,12 +1357,12 @@ public class PrideParadox extends ApplicationAdapter {
         private Sprite object;
         public int level;
         public int kills;
-        public float health;
+        public float score;
         public LoadButton(float x, int index, TextureRegion[] buttonSheet,Preferences save){
             this.x=x;
             this.level=save.getInteger("level",0);
             this.kills=save.getInteger("klls",0);
-            this.health=save.getFloat("health",10);
+            this.score=save.getFloat("score",0);
             this.progress=level*100/6f;
             this.index=index;
             this.font=new BitmapFont(files("joystix.fnt"));
@@ -1512,8 +1593,7 @@ public class PrideParadox extends ApplicationAdapter {
                     if(buttonCode==0){
                         saveIndex=loadButtonIndex;
                         loadGame(saveIndex);
-                        gameStarted=true;
-
+                        currentWave=0;
 //                        drawingDialogue=true;
 //                        drawingText=true;
 //                        fight=false;
@@ -1522,7 +1602,8 @@ public class PrideParadox extends ApplicationAdapter {
                         createStory();
                         initialize();
                         gameState=GameState.Play;
-
+                        gameStarted=true;
+                        initializeLevel(0,0);
                     }
 
                 }break;
