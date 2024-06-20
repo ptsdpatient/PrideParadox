@@ -140,10 +140,11 @@ public class PrideParadox extends ApplicationAdapter {
         gameStory.clear();
         gameStory=new Array<>();
         gameStory.add(new Array<>());
-        gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who has identified himself as a bisexual but faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"funeral.jpeg"))))))),RenderWhat.BG,"riots.jpeg")))));
+        gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who has identified himself as a bisexual but faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"sad.jpeg")),RenderWhat.BG,"tragedy.jpeg")))))),RenderWhat.BG,"rally.jpeg"))));
         gameStory.get(0).add(new StoryLine("One day, he learns about a time machine experiment in an underground lab in China.",new StoryLine("Determined to prevent his child's fate, he uses his software skills to bypass security and access the time machine.",new StoryLine("Without hesitation, the protagonist travels back 32 years to 2015, finding himself in his younger body.",new StoryLine("He is determined to change the course of history and ensure a future where his child and all LGBTQ+ individuals are accepted and valued.",new StoryLine("Tanishq : This is unbelievable! I am finally back in past! I feel so young... is this my home?",new StoryLine("Tanishq : Judging by my home decoration, I think i am somewhere between 2012 and 2016.",new StoryLine("Tanishq : I should head out, i don't want anyone noticing me as an adult. Also, how will i go back to the future!?",new StoryLine("*You get out of your home to find out the fresh breeze outside",new StoryLine("Tanishq : Wow i missed this place so much!",false),RenderWhat.BG,"dog-bg.jpeg"),RenderWhat.BG,"empty.png")),RenderWhat.BG,"house.jpeg"),RenderWhat.Left,"player-stand.png"),RenderWhat.BG,"time.jpg"),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"lab.jpeg"));
-        gameStory.get(0).add(new StoryLine("Tanishq : What the hell is that huge dog!!",new StoryLine("Dog : Woof! Woof! (Oh my god a human, will he play with me?)",new StoryLine("Tanishq : Um Sho Shoo get lost dog! Where is your owner? Where is your belt?!",new StoryLine("Dog : Woof!! (This guy looks like he is weak, lets bully him)",new StoryLine("The dog has become aggressive! You must use your power of righteousness to get away from this dog!",true)))),RenderWhat.Right,"dog-stand.png"));
+        gameStory.get(0).add(new StoryLine("Tanishq : What the hell is that huge dog!!",new StoryLine("Dog : Woof! Woof! (A toddler, am I allowed to maul him to death?)",new StoryLine("Tanishq : Um Sho Shoo get lost dog! Where is your owner? Where is your belt?!",new StoryLine("Dog : Woof!! (This guy looks like he is weak, lets bully him)",new StoryLine("The dog has become aggressive! You must use your power of righteousness to get away from this dog!",true)))),RenderWhat.Right,"dog-stand.png"));
         gameStory.get(0).add(new StoryLine("Dog : Woof! (You are quite strong compared to your size)",new StoryLine("Tanishq : What kind of dog is this? He gives such massive shits!!",true)));
+        gameStory.get(0).add(new StoryLine("Tanishq : ",new StoryLine("Dog : woof... woof... ()")));
     }
     public void drawChoice(SpriteBatch batch,StoryLine line){
         float alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
@@ -185,8 +186,8 @@ public class PrideParadox extends ApplicationAdapter {
                 }
             }
         }
-        batch.draw(background,1280/2f-500,0,1000,800);
-        if(drawingText)dialogueFont.draw(batch,typewriter,230,235,800, Align.topLeft,true);
+        batch.draw(background,1280/2f-450,0,900,800);
+        if(drawingText)dialogueFont.draw(batch,typewriter,270,245,745, Align.topLeft,true);
     }
 
     public static int calculateDepth(StoryLine storyLine){
@@ -370,7 +371,9 @@ public class PrideParadox extends ApplicationAdapter {
                                         new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
                                         new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
                                         new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
-
+                                        new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
+                                        new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
+                                        new EnemyClass(Dog,1,1,false,0,MathUtils.random(1.5f,3f)),
                                 },false),
                         new EnemyWave(
                                 new EnemyClass[]{
@@ -482,8 +485,8 @@ public class PrideParadox extends ApplicationAdapter {
                         new EnemyAnimation(EnemyActionType.Fall,30,0)
                 },
                 new EnemyAnimation[]{
-                        new EnemyAnimation(EnemyActionType.Attack,30f,200),
-                        new EnemyAnimation(EnemyActionType.Attack,130f,40),
+                        new EnemyAnimation(EnemyActionType.Attack,20f,200),
+                        new EnemyAnimation(EnemyActionType.Attack,100f,35),
                         new EnemyAnimation(EnemyActionType.Look,6,1),
                 },
                 new EnemyAnimation[]{
@@ -532,7 +535,7 @@ public class PrideParadox extends ApplicationAdapter {
 
         for(String name: arenaBoundNames) arenaBounds.add(new ArenaBounds(name));
 
-        dialogueFont.getData().setScale(0.95f);
+        dialogueFont.getData().setScale(0.87f);
         choiceFont.getData().setScale(1.25f);
 
         choiceABounds=new Rectangle(120,720/2f,1280/3f,100);
@@ -612,10 +615,10 @@ public class PrideParadox extends ApplicationAdapter {
 //        leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
 
         leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
-        leftChar.setPosition(0,0);
+        leftChar.setPosition(0,-20);
 
         rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
-        rightChar.setPosition(1280-rightChar.getWidth(),0);
+        rightChar.setPosition(1280-rightChar.getWidth(),-20);
 
         rightChar.setFlip(true,false);
 
@@ -849,10 +852,10 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
         }
         leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
-        leftChar.setPosition(0,0);
+        leftChar.setPosition(0,-20);
 
         rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
-        rightChar.setPosition(1280-rightChar.getWidth(),0);
+        rightChar.setPosition(1280-rightChar.getWidth(),-20);
 
         rightChar.setFlip(true,false);
 
@@ -913,10 +916,10 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         leftChar.setSize(leftChar.getWidth(), leftChar.getHeight());
-        leftChar.setPosition(0,0);
+        leftChar.setPosition(0,-20);
 
         rightChar.setSize(rightChar.getWidth(), rightChar.getHeight());
-        rightChar.setPosition(1280-rightChar.getWidth(),0);
+        rightChar.setPosition(1280-rightChar.getWidth(),-20);
 
         rightChar.setFlip(true,false);
 
