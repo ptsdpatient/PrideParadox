@@ -89,7 +89,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static EnemyAction FollowPlayer,StayAround;
     SpriteBatch batch;
     BitmapFont titleFont;
-    GlyphLayout layout;
+    GlyphLayout layout,scoreLayout;
     static String[] menuButtonNames = {"START", "HOW TO PLAY?","GAME RESET" ,"EXIT"};
     static String[] overButtonNames={"RETRY","MENU","QUIT"};
     static String[] pauseButtonNames={"RESUME","SAVE","HOW TO PLAY?","MENU","QUIT"};
@@ -281,10 +281,6 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void initializeLevel(int currentLevel,int currentWave){
         enemyList.clear();
-//        print(currentLevel+":"+currentWave);
-//        print(enemyWaves.get(currentLevel)[currentWave].enemies.length);
-//        print(enemyWaves.get(currentLevel)[currentWave].enemies[0].animationList.get(0).type.get(0).name());
-//        print(enemyWaves.get(currentLevel)[currentWave]+"");
         enemyList.addAll(enemyWaves.get(currentLevel)[currentWave].enemies);
     }
 
@@ -459,7 +455,9 @@ public class PrideParadox extends ApplicationAdapter {
                 new EnemyWave[]{
                         new EnemyWave(
                                 new EnemyClass[]{
-                                        new EnemyClass(Kid,0,0,true,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
                                 },false)
                 }
         );
@@ -516,9 +514,9 @@ public class PrideParadox extends ApplicationAdapter {
 
         kidAanimation.addAll(
                 new EnemyAnimation[]{
-                        new EnemyAnimation(EnemyActionType.Bounce,10,0),
-                        new EnemyAnimation(EnemyActionType.Attack,5,10),
-                        new EnemyAnimation(EnemyActionType.FaceCenter,6,0)
+                        new EnemyAnimation(EnemyActionType.Bounce,200,4),
+                        new EnemyAnimation(EnemyActionType.Attack,3,30),
+                        new EnemyAnimation(EnemyActionType.FaceCenter,2,0)
                 }
         );
         Kid=new EnemyType(extractSprites("kid.png",64,64),kidAanimation,"kid");
@@ -555,6 +553,7 @@ public class PrideParadox extends ApplicationAdapter {
         viewport.apply();
 
         layout = new GlyphLayout();
+        scoreLayout=new GlyphLayout();
         titleFont = new BitmapFont(files("joystix.fnt"));
         titleFont.getData().setScale(1.5f);
 //		titleFont.getData().scale(2f);
@@ -661,7 +660,7 @@ public class PrideParadox extends ApplicationAdapter {
 
         rightChar.setFlip(true,false);
 
-
+        scoreLayout=new GlyphLayout(titleFont,(int) score+"");
 
 //        for(EnemyAnimation[] anim : Dog.animations){
 //            for( EnemyAnimation a : anim){
@@ -727,6 +726,8 @@ public class PrideParadox extends ApplicationAdapter {
                     for(HealthBar bar : healthBars)bar.render(batch);
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
 
+                    titleFont.draw(batch,(int) score+"",1280/2f-scoreLayout.width/2f,scoreLayout.height*2);
+
                     drawPlayer(batch);
 
                     for(ExplosionEffect effect:explosionList){
@@ -739,6 +740,8 @@ public class PrideParadox extends ApplicationAdapter {
                         enemy.render(batch);
                         if(enemy.health<=0){
                             enemyList.removeValue(enemy,true);
+                            score+=5;
+                            scoreLayout=new GlyphLayout(titleFont,(int) score+"");
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                         }
                         if(enemy.bounds.overlaps(playerBounds)&&enemy.attackMode&&playerAnimationId!=2){
@@ -1196,31 +1199,31 @@ public class PrideParadox extends ApplicationAdapter {
             if(inside){
                 switch(decideSide){
                     case 0:{
-                        object.setPosition(320+object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(320,MathUtils.random(120,600-object.getHeight()));
                     }break;
                     case 1:{
-                        object.setPosition(960,MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(960-object.getWidth(),MathUtils.random(120,600-object.getHeight()));
                     }break;
                     case 2:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),600-object.getHeight());
                     }break;
                     case 3:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),120+object.getHeight());
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),120);
                     }break;
                 }
             }else{
                 switch(decideSide){
                     case 0:{
-                        object.setPosition(320-object.getWidth(),MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(320-object.getWidth(),MathUtils.random(120,600-object.getHeight()));
                     }break;
                     case 1:{
-                        object.setPosition(960,MathUtils.random(120+object.getHeight(),600-object.getHeight()));
+                        object.setPosition(960,MathUtils.random(120,600-object.getHeight()));
                     }break;
                     case 2:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),600);
                     }break;
                     case 3:{
-                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),120-object.getHeight());
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),120-object.getHeight());
                     }break;
                 }
             }
@@ -1772,7 +1775,7 @@ public class PrideParadox extends ApplicationAdapter {
                         initialize();
                         gameState=GameState.Play;
                         gameStarted=true;
-                        initializeLevel(0,0);
+                        initializeLevel(1,0);
                     }
 
                 }break;
