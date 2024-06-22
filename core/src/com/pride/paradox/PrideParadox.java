@@ -52,9 +52,9 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float score,transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float score,transitionAlpha=0f,health=10000,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=-1,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
-    public static Boolean gameSaved=false,playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=false,drawingText=false,fight=true,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
+    public static Boolean gameSaved=false,playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
     public static Array<OverButton> overButtonList =new Array<>();
     public static Array<ExplosionEffect> explosionList=new Array<>();
@@ -125,7 +125,7 @@ public class PrideParadox extends ApplicationAdapter {
         }
     }
     public static void loadGame(int saveIndex){
-        currentLevel=gameSaves[saveIndex].getInteger("level",0);
+        currentLevel=gameSaves[saveIndex].getInteger("level",1);
         health=gameSaves[saveIndex].getFloat("score",0);
         kills=gameSaves[saveIndex].getInteger("kills",0);
         if(health==0)health=10;
@@ -144,12 +144,16 @@ public class PrideParadox extends ApplicationAdapter {
         gameStory.get(0).add(new StoryLine("Tanishq : What the hell is that huge dog!!",new StoryLine("Dog : Who's this new person? I must jump on them to show my excitement!",new StoryLine("Tanishq : Um Sho Shoo get lost dog! Where is your owner? Where is your belt?!",new StoryLine("Dog : Woof! Woof! (A toddler! hmm, am I allowed to maul him to death)",new StoryLine("The dog has become aggressive! You must use your power of righteousness to get away from this dog!",true)))),RenderWhat.Right,"dog-stand.png"));
         gameStory.get(0).add(new StoryLine("Dog : Woof! (I jump on people because no one taught me not to. Isn't it fun?)",new StoryLine("Tanishq : This dog has no manners! It seems as if he was abandoned by his owners as a pup",true)));
         gameStory.get(0).add(new StoryLine("Tanishq : Phew, he is finally calmed down...",false));
-        gameStory.get(0).add(new StoryLine("Dog : woof... woof... (I act out because no one showed me love or boundaries.)",new StoryLine("Punish him!",new StoryLine("You grab the dog by his jaws and punch him until he is life less.",new StoryLine("The dog is no longer barking... knowing that the dog won't trouble the locals anymore you feel proud.", false),RenderWhat.Right,"empty.png")),new StoryLine("Pet him!",new StoryLine("You pet him lovingly, the dog is big in size and has been feared for it, ever since he was abbandoned all he wanted was love from someone",new StoryLine("Dog : Woof! (No one trained me to be good, so being bad is all I know. Now on... I shall not trouble the civillians for my fun.)",new StoryLine("You call the animal control to give this dog asylum, you hope to meet him again...",false))))));
+        gameStory.get(0).add(new StoryLine("Dog : woof... woof... (I act out because no one showed me love or boundaries.)",new StoryLine("Punish him!",new StoryLine("You grab the dog by his jaws and punch him until he is life less.",new StoryLine("The dog is no longer barking... knowing that the dog won't trouble the locals anymore you feel proud.", false),RenderWhat.Right,"empty.png")),new StoryLine("Pet him!",new StoryLine("You pet him lovingly, the dog is big in size and has been feared for it, ever since he was abbandoned all he wanted was love from someone",new StoryLine("Dog : Woof! (No one trained me to be good, so being bad is all I know. Now on... I shall not trouble the civillians for my fun.)",new StoryLine("You call the animal control to give this dog asylum, you hope to meet him again...",false),RenderWhat.Right,"empty.png")))));
         gameStory.get(0).add(new StoryLine("Well done! you made it through the first level! You can save your game from the next dialogue onwards.",false));
 
         gameStory.add(new Array<>());
-        gameStory.get(1).add(new StoryLine("As you leave behind your village, you come across an old playground where you used to play cricket in... you get nostalgia!",new StoryLine("You remember how you used to practice to get good in the game and never gave up.", new StoryLine("You remember how you and your friends would go get a pav bhaji after a long sweaty game with all those brusies.",new StoryLine("Tanishq : The sweet and chilled glass of water from the purifier would feel better than amrit.", new StoryLine("Suddenly footsteps can be heard from afar approaching you, you remember an annoying person who would cause trouble to you for no reason.",new StoryLine("Tanishq : huh, what are you doing out here?",false),RenderWhat.Right,"kid-stand.png")))),RenderWhat.BG,"ground.jpeg"));
+        gameStory.get(1).add(new StoryLine("As you leave behind your village, you come across an old playground where you used to play cricket in... you get nostalgia!",new StoryLine("You remember how you used to practice to get good in the game and never gave up.", new StoryLine("You remember how you and your friends would go get a pav bhaji after a long sweaty game with all those brusies.",new StoryLine("Tanishq : I really miss my childhood... I wish I could taste that chilled purified water back home.", new StoryLine("As you enjoy the view a football hits you in the back.",new StoryLine("Tanishq : Hey, do you not see I am standing here? The court is just ahead go play there!",false),RenderWhat.Right,"kid-stand.png")))),RenderWhat.BG,"ground.jpeg"));
+        gameStory.get(1).add(new StoryLine("A kid from afar smirks at you menacingly",new StoryLine("You wave your profiler tool in your watch to get information on the kid", new StoryLine("Foolish of you as the requests can't time travel into the future to a database, maybe you are not the brightest person to time travel.",new StoryLine("The kid is clearly a football fanatic. You should try dodging with your old goofy ahhh",new StoryLine("Kid : You look so gay in that appeal.",new StoryLine("You think to yourself- this kid probably boasting his delinquent connections and taking advantage of it.", new StoryLine("You think to yourself- this kid has clearly bad influence from his toxic environment and doesn't knows what right for him. Calling people chakka as a derogetory word...",new StoryLine("Tanishq : Hey kid would you kick the ball at me once again?",true)))))))));
+        gameStory.get(1).add(new StoryLine("Kid : you are surprisingly well, you don't come from here do you? where are you from?",new StoryLine("Tanishq : That is least of your concern, why did you call me gay in the first place? do you think that's funny?", new StoryLine("Kid : Well, why not? They are the bottom feeders of the society, I don't feel safe around them, they are accused to be traffickers.",new StoryLine("You think to yourself- he is correct around this time the crime rates of such things were more...",new StoryLine("Suddenly another football comes at you!",new StoryLine("Kid : How pitiful of you to side on with those weird creeps, are you one of them?",true)))))));
+        gameStory.get(1).add(new StoryLine("Tanishq : Look the only reason they resort on doing bad work is because we don't give them opportunity! You should look at the world from their perspective as well!",new StoryLine("The kid is confused... he has some self doubts but comes back at giving you another fight",true)));
 
+        //        gameStory.get(1).add(new StoryLine())
 
     }
 
@@ -180,7 +184,8 @@ public class PrideParadox extends ApplicationAdapter {
                         storyLineIndex++;
                     }
                     if(storyLineIndex==gameStory.get(currentLevel).size){
-                        currentLevel++;
+//                        currentLevel++;
+                        print("levelUp");
                         storyLineIndex=0;
                     }
 
@@ -191,6 +196,7 @@ public class PrideParadox extends ApplicationAdapter {
                     if(line.fightState){
                         currentWave++;
                         initializeLevel(currentLevel,currentWave);
+                        print(currentLevel+" : "+currentWave);
                         fight=true;
                         drawingText=false;
                         drawingDialogue=false;
@@ -457,14 +463,14 @@ public class PrideParadox extends ApplicationAdapter {
                                         new EnemyClass(Kid,0,0,false,0,1f),
                                         new EnemyClass(Kid,0,0,false,0,1f),
                                         new EnemyClass(Kid,0,0,false,0,1f),
-                                },false),
+                                },true),
                         new EnemyWave(
                                 new EnemyClass[]{
                                         new EnemyClass(Kid,1,0,false,0,1f),
                                         new EnemyClass(Kid,1,0,false,90,1f),
                                         new EnemyClass(Kid,1,0,false,180,1f),
                                         new EnemyClass(Kid,1,0,false,270,1f),
-                                },false),
+                                },true),
                         new EnemyWave(
                                 new EnemyClass[]{
                                         new EnemyClass(Kid,2,0,false,0,1f),
@@ -502,7 +508,7 @@ public class PrideParadox extends ApplicationAdapter {
                                         new EnemyClass(Kid,2,1,false,0,1f),
                                         new EnemyClass(Kid,2,1,false,0,1f),
                                         new EnemyClass(Kid,2,1,false,0,1f),
-                                },false),
+                                },true),
                         new EnemyWave(
                                 new EnemyClass[]{
                                         new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
@@ -538,7 +544,7 @@ public class PrideParadox extends ApplicationAdapter {
                                         new EnemyClass(Kid,0,0,false,90,1f),
                                         new EnemyClass(Kid,0,0,false,90,1f),
                                         new EnemyClass(Kid,1,1,false,180,1f),
-                                },false),
+                                },true),
                 },
                 new EnemyWave[]{
                         new EnemyWave(
@@ -939,14 +945,12 @@ public class PrideParadox extends ApplicationAdapter {
                     for(ExplosionEffect effect:explosionList){
                         effect.render(batch);
                         if(effect.die){
-                            effect.dispose();
                             explosionList.removeValue(effect,true);
                         }
                     }
                     for(EnemyClass enemy : enemyList){
                         enemy.render(batch);
                         if(enemy.health<=0){
-                            enemy.dispose();
                             enemyList.removeValue(enemy,true);
                             scoreLayout=new GlyphLayout(titleFont,(int) score+"");
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
@@ -957,7 +961,6 @@ public class PrideParadox extends ApplicationAdapter {
                             playerHurt=true;
                             Gdx.input.vibrate(300);
                             if(Controllers.getControllers().size>0)Controllers.getControllers().first().startVibration(300,0.7f);
-                            enemy.dispose();
                             enemyList.removeValue(enemy,true);
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                             playerFPS=0.1f;
@@ -968,7 +971,6 @@ public class PrideParadox extends ApplicationAdapter {
                         proj.render(batch);
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
-                                proj.dispose();
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect((Objects.equals(bounds.name, "right"))?proj.obj.getX()+proj.obj.getWidth():proj.obj.getX(),(Objects.equals(bounds.name, "up"))?proj.obj.getY()+proj.obj.getHeight():proj.obj.getY(),0.2f));
                             }
@@ -976,7 +978,6 @@ public class PrideParadox extends ApplicationAdapter {
                             if(enemy.getBounds(proj.getPoint())){
                                 enemy.health-=1.5f;
                                 score+=5;
-                                proj.dispose();
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
@@ -994,6 +995,7 @@ public class PrideParadox extends ApplicationAdapter {
 
                     if(enemyList.size<1 &&!enemyWaves.get(currentLevel)[currentWave].endFight){
                         currentWave++;
+                        print(currentLevel+" : "+currentWave);
                         initializeLevel(currentLevel,currentWave);
                     }
                     if(enemyList.size<1 && health>0&&enemyWaves.get(currentLevel)[currentWave].endFight) {
@@ -1170,8 +1172,10 @@ public class PrideParadox extends ApplicationAdapter {
         batch.dispose();
         leftChar.getTexture().dispose();
         rightChar.getTexture().dispose();
-
     }
+
+
+
 
     public static void setChoiceDepth(){
         if(choice==choiceState.A){
@@ -1297,8 +1301,8 @@ public class PrideParadox extends ApplicationAdapter {
         }
         public void dispose(){
             for(EnemyClass enemy : enemies){
-                enemy.object.getTexture().dispose();
-                enemy.target.getTexture().dispose();
+                if(enemy.object.getTexture()!=null)enemy.object.getTexture().dispose();
+                if(enemy.target.getTexture()!=null)enemy.target.getTexture().dispose();
             }
         }
     }
@@ -1791,9 +1795,8 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         public void dispose(){
-            object.getTexture().dispose();
-            target.getTexture().dispose();
-
+            if(object.getTexture()!=null)object.getTexture().dispose();
+            if(target!=null)target.getTexture().dispose();
         }
     }
 
@@ -2108,16 +2111,17 @@ public class PrideParadox extends ApplicationAdapter {
                         saveIndex=loadButtonIndex;
                         loadGame(saveIndex);
                         currentWave=0;
-//                        drawingDialogue=true;
-//                        drawingText=true;
-//                        fight=false;
-//                        drawTextTime=10f;
+                        drawingDialogue=true;
+                        drawingText=true;
+                        fight=false;
+                        drawTextTime=10f;
                         storyLineIndex=0;
                         createStory();
                         initialize();
                         gameState=GameState.Play;
                         gameStarted=true;
-                        initializeLevel(2,3);
+                        currentLevel=1;
+                        initializeLevel(1,0);
                     }
 
                 }break;
