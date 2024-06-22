@@ -9,6 +9,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.Controllers;
@@ -68,6 +70,8 @@ public class PrideParadox extends ApplicationAdapter {
     public static Array<EnemyWave[]> enemyWaves= new Array<>(6);
     public static Array<MobileButton> mobileButtonList = new Array<>();
     public static Array<Animation<TextureRegion>> playerAnimation= new Array<>(3);
+    public static Sound traverseSound,pointSound,fireworkSound,damageSound,laserSound,popSound,startSound,clickSound;
+    public static Music menuTheme,clinicTheme,dogTheme,kidTheme;
     public static StoryLine currentLine;
     public Viewport viewport;
     public static Circle playerBounds;
@@ -132,6 +136,7 @@ public class PrideParadox extends ApplicationAdapter {
                 Gdx.app.exit();
             }break;
         }
+        startSound.play();
     }
     public static void loadGame(int saveIndex){
         currentLevel=gameSaves[saveIndex].getInteger("level",0);
@@ -188,6 +193,7 @@ public class PrideParadox extends ApplicationAdapter {
                 typewriter=dialogueMessage.substring(0,typewriterIndex);
             }else {
                 if(lineSkip){
+                    laserSound.play();
                     if(((gameStory.get(currentLevel).get(storyLineIndex).depth!=lineDepth+1)&&gameStory.get(currentLevel).get(storyLineIndex).depth!=0)){
                         lineDepth++;
                     }
@@ -207,6 +213,7 @@ public class PrideParadox extends ApplicationAdapter {
                     typewriterIndex=0;
                     drawTextTime=10f;
                     if(line.fightState){
+                        traverseSound.play();
                         currentWave++;
                         initializeLevel(currentLevel,currentWave);
                         print(currentLevel+" : "+currentWave);
@@ -238,12 +245,14 @@ public class PrideParadox extends ApplicationAdapter {
         gameSaves[saveIndex].putInteger("kills",kills);
         gameSaves[saveIndex].flush();
         gameSaved=true;
+        startSound.play();
         gameSavedTime=0;
     }
     public static void handlePause(){
         switch (pauseButtonActiveIndex) {
             case 0: {
                 gameState = GameState.Play;
+                menuTheme.stop();
                 gameStarted=true;
             }
             break;
@@ -263,6 +272,7 @@ public class PrideParadox extends ApplicationAdapter {
             }break;
 
         }
+        startSound.play();
     }
     public static void handleMenu() {
         switch (menuButtonActiveIndex) {
@@ -282,13 +292,20 @@ public class PrideParadox extends ApplicationAdapter {
                 Gdx.app.exit();
             }break;
         }
+        startSound.play();
     }
     public static Boolean checkExitKey(int keycode){
         return keycode==Input.Keys.X ||keycode==Input.Keys.ESCAPE || keycode==Input.Keys.CONTROL_RIGHT;
     }
 
     public static void clearProgress(){
-        for(Preferences prefs : gameSaves)prefs.clear();
+        for(Preferences prefs : gameSaves){
+            prefs.clear();
+//            prefs.putInteger("level",0);
+//            prefs.putFloat("score",0);
+//            prefs.putInteger("kills",0);
+//            prefs.flush();
+        }
     }
 
     public static TextureRegion[] extractSprites(String name,int width,int height){
@@ -319,7 +336,9 @@ public class PrideParadox extends ApplicationAdapter {
         shootTimeOut+=Gdx.graphics.getDeltaTime();
 
         if(fireProjectile){
+
             if(frameIndex==7 && shootTimeOut>0.05) {
+                laserSound.play();
                 projectileList.add(new Projectile(player.getX(),player.getY(),player.getRotation()));
                 shootTimeOut=0;
             }
@@ -798,6 +817,24 @@ public class PrideParadox extends ApplicationAdapter {
         healthBars.add(new HealthBar(1280/2f -96,635,extractSprites("healthBarSheet.png",64,16),0));
         healthBars.add(new HealthBar(1280/2f -96,635,extractSprites("healthBarSheet.png",64,16),1));
 
+        traverseSound=Gdx.audio.newSound(files("traverse.ogg"));
+        menuTheme=Gdx.audio.newMusic(files("menu.mp3"));
+        clinicTheme=Gdx.audio.newMusic(files("clinic.mp3"));
+        damageSound=Gdx.audio.newSound(files("damage.ogg"));
+        pointSound=Gdx.audio.newSound(files("point.ogg"));
+        fireworkSound=Gdx.audio.newSound(files("fireworks.ogg"));
+        dogTheme =Gdx.audio.newMusic(files("dog.mp3"));
+        kidTheme=Gdx.audio.newMusic(files("kid.mp3"));
+        laserSound=Gdx.audio.newSound(files("laser.ogg"));
+        popSound=Gdx.audio.newSound(files("pop.mp3"));
+        startSound=Gdx.audio.newSound(files("start.ogg"));
+        clickSound=Gdx.audio.newSound(files("click.ogg"));
+
+        menuTheme.setLooping(true);
+        clinicTheme.setLooping(true);
+        dogTheme.setLooping(true);
+        kidTheme.setLooping(true);
+
         playerSheet=new TextureRegion(new Texture(files("player.png")));
         TextureRegion[][] totalFrames=playerSheet.split(32,32);
 
@@ -872,17 +909,7 @@ public class PrideParadox extends ApplicationAdapter {
         rightChar.setFlip(true,false);
 
         scoreLayout=new GlyphLayout(titleFont,(int) score+"");
-
-//        for(EnemyAnimation[] anim : Dog.animations){
-//            for( EnemyAnimation a : anim){
-//                print(a.type+"");
-//            }
-//        }
-//        for(EnemyAnimation[] anim : Kid.animations){
-//            for( EnemyAnimation a : anim){
-//                print(a.type+"");
-//            }
-//        }
+        menuTheme.play();
     }
 
     @Override
@@ -951,6 +978,7 @@ public class PrideParadox extends ApplicationAdapter {
                         enemy.render(batch);
                         if(enemy.health<=0){
                             enemyList.removeValue(enemy,true);
+                            pointSound.play();
                             scoreLayout=new GlyphLayout(titleFont,(int) score+"");
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                         }
@@ -958,6 +986,7 @@ public class PrideParadox extends ApplicationAdapter {
                             health-=1;
                             playerAnimationId=2;
                             playerHurt=true;
+                            damageSound.play();
                             Gdx.input.vibrate(300);
                             if(Controllers.getControllers().size>0)Controllers.getControllers().first().startVibration(300,0.7f);
                             enemyList.removeValue(enemy,true);
@@ -971,12 +1000,14 @@ public class PrideParadox extends ApplicationAdapter {
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
                                 projectileList.removeValue(proj,true);
+                                popSound.play(0.3f);
                                 explosionList.add(new ExplosionEffect((Objects.equals(bounds.name, "right"))?proj.obj.getX()+proj.obj.getWidth():proj.obj.getX(),(Objects.equals(bounds.name, "up"))?proj.obj.getY()+proj.obj.getHeight():proj.obj.getY(),0.2f));
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
                                 enemy.health-=1.5f;
                                 score+=5;
+                                fireworkSound.play(0.1f,0.75f,0.0f);
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
@@ -990,6 +1021,7 @@ public class PrideParadox extends ApplicationAdapter {
 
                     if(health<1){
                         gameState=GameState.Over;
+                        menuTheme.play();
                     }
 
                     if(enemyList.size<1 &&!enemyWaves.get(currentLevel)[currentWave].endFight){
@@ -1131,6 +1163,18 @@ public class PrideParadox extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        traverseSound.dispose();
+        menuTheme.dispose();
+        clinicTheme.dispose();
+        damageSound.dispose();
+        dogTheme.dispose();
+        kidTheme.dispose();
+        laserSound.dispose();
+        popSound.dispose();
+        fireworkSound.dispose();
+        pointSound.dispose();
+        startSound.dispose();
+        clickSound.dispose();
         for(Projectile pro:projectileList)pro.dispose();
         for(MenuButton btn : menuButtonArray)btn.dispose();
         for(OverButton btn : overButtonList)btn.dispose();
@@ -2059,12 +2103,18 @@ public class PrideParadox extends ApplicationAdapter {
             switch (gameState) {
                 case Menu: {
                     if (buttonCode == 11) {
-                        if (menuButtonActiveIndex > 0) menuButtonActiveIndex--;
+                        if (menuButtonActiveIndex > 0) {
+                            menuButtonActiveIndex--;
+                            traverseSound.play();
+                        }
                         else controller.startVibration(300, 0.5f);
 
                     }
                     if (buttonCode == 12) {
-                        if (menuButtonActiveIndex < menuButtonNames.length-1) menuButtonActiveIndex++;
+                        if (menuButtonActiveIndex < menuButtonNames.length-1){
+                            menuButtonActiveIndex++;
+                            traverseSound.play();
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if (buttonCode == 0) {
@@ -2077,12 +2127,17 @@ public class PrideParadox extends ApplicationAdapter {
 
                 case Pause:{
                     if (buttonCode == 11) {
-                        if (pauseButtonActiveIndex > 0) pauseButtonActiveIndex--;
+                        if (pauseButtonActiveIndex > 0) {
+                            traverseSound.play();
+                            pauseButtonActiveIndex--;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if (buttonCode == 12) {
-                        if (pauseButtonActiveIndex < pauseButtonNames.length-1)
+                        if (pauseButtonActiveIndex < pauseButtonNames.length-1) {
+                            traverseSound.play();
                             pauseButtonActiveIndex++;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if(buttonCode==0){
@@ -2095,11 +2150,17 @@ public class PrideParadox extends ApplicationAdapter {
 
                 case Load:{
                     if(buttonCode==13){
-                        if (loadButtonIndex > 0) loadButtonIndex--;
+                        if (loadButtonIndex > 0) {
+                            traverseSound.play();
+                            loadButtonIndex--;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if(buttonCode==14){
-                        if (loadButtonIndex <2) loadButtonIndex++;
+                        if (loadButtonIndex <2) {
+                            traverseSound.play();
+                            loadButtonIndex++;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if(buttonCode==1){
@@ -2109,18 +2170,15 @@ public class PrideParadox extends ApplicationAdapter {
                     if(buttonCode==0){
                         saveIndex=loadButtonIndex;
                         loadGame(saveIndex);
-                        currentWave=0;
                         drawingDialogue=true;
                         drawingText=true;
                         fight=false;
                         drawTextTime=10f;
                         storyLineIndex=0;
-                        createStory();
-                        initialize();
                         gameState=GameState.Play;
                         gameStarted=true;
-                        currentLevel=1;
-                        initializeLevel(1,0);
+                        menuTheme.stop();
+                        startSound.play();
                     }
 
                 }break;
@@ -2132,12 +2190,17 @@ public class PrideParadox extends ApplicationAdapter {
                 }break;
                 case Over:{
                     if (buttonCode == 11) {
-                        if (overButtonActiveIndex > 0) overButtonActiveIndex--;
+                        if (overButtonActiveIndex > 0){
+                            traverseSound.play();
+                            overButtonActiveIndex--;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if (buttonCode == 12) {
-                        if (overButtonActiveIndex < overButtonNames.length-1)
+                        if (overButtonActiveIndex < overButtonNames.length-1) {
+                            traverseSound.play();
                             overButtonActiveIndex++;
+                        }
                         else controller.startVibration(300, 0.5f);
                     }
                     if(buttonCode==0){
@@ -2148,6 +2211,7 @@ public class PrideParadox extends ApplicationAdapter {
 
                     if((buttonCode==3||buttonCode==4)){
                         gameState=GameState.Pause;
+                        menuTheme.play();
                     }
                     if(fight){
                         if(buttonCode==0){
@@ -2173,9 +2237,11 @@ public class PrideParadox extends ApplicationAdapter {
                     if(choiceMode){
                         if(buttonCode==13){
                             choice=choiceState.A;
+                            traverseSound.play();
                         }
                         if(buttonCode==14){
                             choice=choiceState.B;
+                            traverseSound.play();
                         }
                         if(buttonCode==0){
                             gameStory.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
@@ -2189,6 +2255,7 @@ public class PrideParadox extends ApplicationAdapter {
                                 typewriterIndex=dialogueMessage.length();
                                 typewriter=dialogueMessage;
                             }else lineSkip=true;
+                            clickSound.play();
                         }
                     }
 
@@ -2205,11 +2272,17 @@ public class PrideParadox extends ApplicationAdapter {
                 case Menu: {
                     if (axisCode == 1) {
                         if ((MathUtils.floor(value) == -1)) {
-                            if (menuButtonActiveIndex > 0) menuButtonActiveIndex--;
+                            if (menuButtonActiveIndex > 0) {
+                                traverseSound.play();
+                                menuButtonActiveIndex--;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (menuButtonActiveIndex < menuButtonNames.length-1) menuButtonActiveIndex++;
+                            if (menuButtonActiveIndex < menuButtonNames.length-1) {
+                                traverseSound.play();
+                                menuButtonActiveIndex++;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -2219,11 +2292,17 @@ public class PrideParadox extends ApplicationAdapter {
                 case Load:{
                     if(axisCode==0){
                         if ((MathUtils.floor(value) == -1)) {
-                            if (loadButtonIndex > 0) loadButtonIndex--;
+                            if (loadButtonIndex > 0) {
+                                traverseSound.play();
+                                loadButtonIndex--;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (loadButtonIndex < 2) loadButtonIndex++;
+                            if (loadButtonIndex < 2) {
+                                traverseSound.play();
+                                loadButtonIndex++;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -2231,11 +2310,17 @@ public class PrideParadox extends ApplicationAdapter {
                 case Over:{
                     if (axisCode == 1) {
                         if ((MathUtils.floor(value) == -1)) {
-                            if (overButtonActiveIndex > 0) overButtonActiveIndex--;
+                            if (overButtonActiveIndex > 0) {
+                                traverseSound.play();
+                                overButtonActiveIndex--;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (overButtonActiveIndex < overButtonNames.length-1) overButtonActiveIndex++;
+                            if (overButtonActiveIndex < overButtonNames.length-1) {
+                                traverseSound.play();
+                                overButtonActiveIndex++;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -2243,11 +2328,17 @@ public class PrideParadox extends ApplicationAdapter {
                 case Pause:{
                     if (axisCode == 1) {
                         if ((MathUtils.floor(value) == -1)) {
-                            if (pauseButtonActiveIndex > 0) pauseButtonActiveIndex--;
+                            if (pauseButtonActiveIndex > 0) {
+                                traverseSound.play();
+                                pauseButtonActiveIndex--;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                         if ((MathUtils.floor(value) == 1)) {
-                            if (pauseButtonActiveIndex < pauseButtonNames.length-1) pauseButtonActiveIndex++;
+                            if (pauseButtonActiveIndex < pauseButtonNames.length-1) {
+                                traverseSound.play();
+                                pauseButtonActiveIndex++;
+                            }
                             else controller.startVibration(300, 0.5f);
                         }
                     }
@@ -2295,9 +2386,11 @@ public class PrideParadox extends ApplicationAdapter {
                     if(axisCode==0&&drawingDialogue){
                         if ((MathUtils.floor(value) <-0.5)) {
                             choice=choiceState.A;
+                            traverseSound.play();
                         }
                         if ((MathUtils.floor(value) > 0.5)) {
                             choice=choiceState.B;
+                            traverseSound.play();
                         }
                     }
                 }
@@ -2347,9 +2440,11 @@ public class PrideParadox extends ApplicationAdapter {
                 case Menu: {
                     if ((keycode == Input.Keys.UP||keycode == Input.Keys.W) && menuButtonActiveIndex > 0) {
                         menuButtonActiveIndex--;
+                        traverseSound.play();
                     }
                     if ((keycode == Input.Keys.DOWN||keycode == Input.Keys.W) && menuButtonActiveIndex < menuButtonNames.length-1) {
                         menuButtonActiveIndex++;
+                        traverseSound.play();
                     }
                     if (keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE) {
                         handleMenu();
@@ -2380,9 +2475,11 @@ public class PrideParadox extends ApplicationAdapter {
                 case Load:{
                     if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) && loadButtonIndex>0){
                         loadButtonIndex--;
+                        traverseSound.play();
                     }
                     if((keycode==Input.Keys.D||keycode==Input.Keys.RIGHT) && loadButtonIndex<2){
                         loadButtonIndex++;
+                        traverseSound.play();
                     }
 
                     if (keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE) {
@@ -2398,6 +2495,8 @@ public class PrideParadox extends ApplicationAdapter {
                         initialize();
                         gameState=GameState.Play;
                         drawTextTime=10f;
+                        menuTheme.stop();
+                        startSound.play();
                     }
                     if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
                         gameState=GameState.Menu;
@@ -2405,6 +2504,7 @@ public class PrideParadox extends ApplicationAdapter {
                 }break;
                 case Play:{
                     if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
+                        menuTheme.play();
                         gameState=GameState.Pause;
                     }
                     if(fight){
@@ -2427,9 +2527,11 @@ public class PrideParadox extends ApplicationAdapter {
                     if (choiceMode) {
                         if((keycode==Input.Keys.A||keycode==Input.Keys.LEFT) ){
                             choice=choiceState.A;
+                            traverseSound.play();
                         }
                         if((keycode==Input.Keys.D||keycode==Input.Keys.RIGHT)){
                             choice=choiceState.B;
+                            traverseSound.play();
                         }
                         if(keycode == Input.Keys.ENTER||keycode==Input.Keys.Z || keycode == Input.Keys.SPACE){
                             gameStory.get(currentLevel).get(storyLineIndex).choice = choice==choiceState.A?StoryLine.choiceState.A:StoryLine.choiceState.B;
@@ -2444,6 +2546,7 @@ public class PrideParadox extends ApplicationAdapter {
                                 typewriterIndex=dialogueMessage.length();
                                 typewriter=dialogueMessage;
                             }else lineSkip=true;
+                            clickSound.play();
                         }
                     }
                 }break;
@@ -2663,6 +2766,8 @@ public class PrideParadox extends ApplicationAdapter {
                             gameState=GameState.Play;
                             drawTextTime=10f;
                             exit=false;
+                            menuTheme.stop();
+                            startSound.play();
                         }
                     }
                     if(exit)gameState=GameState.Menu;
@@ -2733,6 +2838,7 @@ public class PrideParadox extends ApplicationAdapter {
                             typewriterIndex=dialogueMessage.length();
                             typewriter=dialogueMessage;
                         }else lineSkip=true;
+                        clickSound.play();
                     }
                 }break;
                 case Instructions: {
