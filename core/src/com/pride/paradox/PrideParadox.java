@@ -152,6 +152,10 @@ public class PrideParadox extends ApplicationAdapter {
         gameStory.get(1).add(new StoryLine("A kid from afar smirks at you menacingly",new StoryLine("You wave your profiler tool in your watch to get information on the kid", new StoryLine("Foolish of you as the requests can't time travel into the future to a database, maybe you are not the brightest person to time travel.",new StoryLine("The kid is clearly a football fanatic. You should try dodging with your old goofy ahhh",new StoryLine("Kid : You look so gay in that appeal.",new StoryLine("You think to yourself- this kid probably boasting his delinquent connections and taking advantage of it.", new StoryLine("You think to yourself- this kid has clearly bad influence from his toxic environment and doesn't knows what right for him. Calling people chakka as a derogetory word...",new StoryLine("Tanishq : Hey kid would you kick the ball at me once again?",true)))))))));
         gameStory.get(1).add(new StoryLine("Kid : you are surprisingly well, you don't come from here do you? where are you from?",new StoryLine("Tanishq : That is least of your concern, why did you call me gay in the first place? do you think that's funny?", new StoryLine("Kid : Well, why not? They are the bottom feeders of the society, I don't feel safe around them, they are accused to be traffickers.",new StoryLine("You think to yourself- he is correct around this time the crime rates of such things were more...",new StoryLine("Suddenly another football comes at you!",new StoryLine("Kid : How pitiful of you to side on with those weird creeps, are you one of them?",true)))))));
         gameStory.get(1).add(new StoryLine("Tanishq : Look the only reason they resort on doing bad work is because we don't give them opportunity! You should look at the world from their perspective as well!",new StoryLine("The kid is confused... he has some self doubts but comes back at giving you another fight",true)));
+        gameStory.get(1).add(new StoryLine("The kid is now exhausted from giving his all",new StoryLine("Kid : You know what? maybe its right... I have never tried to see from other people's perspective, they have a different past...", new StoryLine("Kid : I have read in many articles that families have disowned the kids that came out to be not straight... what would happen if I was in their place...",new StoryLine("Tanishq : Now, do you get it? It may look cool and all to say these slangs to make you look a little different from the crowd.",new StoryLine("Tanishq : but that will absolutely will not change anything as people won't seem to care about it.", new StoryLine("Tanishq : All that matters is what can you give to your country, so you will be remembered and loved.",new StoryLine("Kid : Blah blah blah shut up with your nonsense... (The kid tries to catch a breath from your long fairy tale)",new StoryLine("Kid : You know what? there is doctor that is psychotic you should really see him, he is able to treat the non binary people.", new StoryLine("Tanishq : So... where exactly can I find this fellow?",new StoryLine("You received a map from the kid",new StoryLine("Kid : Well... this is all I can offer, it was nice to meet you. I have to get back home now",new StoryLine("With this you head to the clinic the boy's gifted map",new StoryLine("and with this the second level comes to an end!",false))))))))))))));
+
+        gameStory.add(new Array<>());
+        gameStory.get(2).add(new StoryLine("As you walk for hours through the city you finally find the clinic that has been known for making people straight",new StoryLine("You enter the clinic... the clinic is clean and shiny, you wonder how this doctor supposedly treats the people? could it be hypnosis?",new StoryLine("As you wait inside the clinic you look around yourself watching parents with their kids all quiet",new StoryLine("you act like your wife making you fit in with the other peoples there, and the clerk has noticed you. Its your turn to get treated",new StoryLine("As you enter the treatment room you find a doctor holding a syringe.",new StoryLine("Doctor : Come lay flat on the bed child, this shall not hurt you at all",new StoryLine("Tanishq : What is this scam that you are running? Are you even a certified doctor?",new StoryLine("The doctor shows you all his degree in medical science. You are now convinced",new StoryLine("As the "))))),RenderWhat.Right,"doctor.png")))),RenderWhat.BG,"clinic.jpeg");
 
         //        gameStory.get(1).add(new StoryLine())
 
@@ -1302,7 +1306,7 @@ public class PrideParadox extends ApplicationAdapter {
         public void dispose(){
             for(EnemyClass enemy : enemies){
                 if(enemy.object.getTexture()!=null)enemy.object.getTexture().dispose();
-                if(enemy.target.getTexture()!=null)enemy.target.getTexture().dispose();
+                if(enemy.target!=null)enemy.target.getTexture().dispose();
             }
         }
     }
@@ -1534,7 +1538,7 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                     if(animationIndex==1){
                         object.setAlpha(0f);
-                        delay=MathUtils.random(7,20);
+//                        delay=MathUtils.random(7,20);
                     }
                     if(animationIndex==2){
                         update=false;
