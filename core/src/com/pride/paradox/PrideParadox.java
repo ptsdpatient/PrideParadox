@@ -675,7 +675,7 @@ public class PrideParadox extends ApplicationAdapter {
                         new EnemyAnimation(EnemyActionType.ThrowVer,30,-1),
                 },
                 new EnemyAnimation[]{
-                        new EnemyAnimation(FollowPlayer.type,30,35),
+                        new EnemyAnimation(FollowPlayer.type,60*4,35),
                 },
                 new EnemyAnimation[]{
                         new EnemyAnimation(EnemyActionType.Attack,25f,25),
