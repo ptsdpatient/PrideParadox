@@ -52,7 +52,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static OrthographicCamera camera;
     public Texture background;
     public BitmapFont dialogueFont,choiceFont;
-    public static float score,transitionAlpha=0f,health=10000,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
+    public static float score,transitionAlpha=0f,health=10,playerTime=0,playerFPS= 0.08F,shootTimeOut=0, timeElapsed = 0, gameSavedTime=0,controllerConectTime = 0f,drawTextTime=0,textDuration=0f;
     public static int overButtonActiveIndex=0,kills=0,frameIndex=0,saveIndex=0,pauseButtonActiveIndex=0,menuButtonActiveIndex = 0,loadButtonIndex=0,typewriterIndex=0,currentLevel=0,currentWave=-1,storyLineIndex=0,lineDepth=0,playerAnimationId=0;
     public static Boolean gameSaved=false,playerHurt=false,gameStarted=false,mouseControlActive=false,controllerConnected=false,drawingDialogue=true,drawingText=true,fight=false,lineSkip=false,choiceMode=false,playerTurnLeft=false,playerTurnRight=false,playerForward=false,playerBackward=false,fireProjectile=false,fireKey=false;
     public static Array<MenuButton> menuButtonArray = new Array<>();
@@ -113,7 +113,16 @@ public class PrideParadox extends ApplicationAdapter {
         switch(overButtonActiveIndex){
             case 0:{
                 health=10;
-                initialize();
+                enemyList.clear();
+                player.setPosition(1280/2f,720/2f);
+                fight=false;
+                drawingDialogue=true;
+                drawingText=true;
+                currentWave=0;
+                storyLineIndex=0;
+                createWaves();
+                createStory();
+                initializeStory();
                 gameState=GameState.Play;
             }break;
             case 1:{
@@ -125,8 +134,8 @@ public class PrideParadox extends ApplicationAdapter {
         }
     }
     public static void loadGame(int saveIndex){
-        currentLevel=gameSaves[saveIndex].getInteger("level",2);
-        health=gameSaves[saveIndex].getFloat("score",0);
+        currentLevel=gameSaves[saveIndex].getInteger("level",0);
+        score=gameSaves[saveIndex].getFloat("score",0);
         kills=gameSaves[saveIndex].getInteger("kills",0);
         if(health==0)health=10;
     }
@@ -138,7 +147,6 @@ public class PrideParadox extends ApplicationAdapter {
     public static void createStory(){
         gameStory.clear();
         gameStory=new Array<>();
-
         gameStory.add(new Array<>());
         gameStory.get(0).add(new StoryLine("The year is 2047. India has faced and overcome many challenges, Epidemics, Mass Extinction, World War 3, and a severe Food Crisis",new StoryLine("The country has emerged victorious, with people finding jobs and the caste system being a thing of the past.", new StoryLine("However, acceptance of the LGBTQ+ community is still lacking in many areas, including government jobs and private companies.",new StoryLine("Our story is set in a bustling city. Despite progress, LGBTQ+ individuals are still treated unfairly.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("They have had enough and decide to protest, demanding equal rights and the opportunity to fulfill their dreams.",new StoryLine("Among the protestors is the child of our protagonist, who has identified himself as a bisexual but faces discrimination at school.",new StoryLine("His father warns him to stay away from the rally, but the child sneaks out to join it anyway.",new StoryLine("The peaceful rally turns into chaos when a violent group attacks, leading to a mass shootout.", new StoryLine("People run in all directions, and the police get involved.",new StoryLine("Hearing about the violence, the protagonist rushes to the rally, only to learn from a police officer that his child, who was at the front, has died.",new StoryLine("Grief-stricken, the protagonist blames himself and the world. He spends years in mourning,",new StoryLine("wishing he could change the past to make India more accepting of LGBTQ+ individuals.",false),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"sad.jpeg")),RenderWhat.BG,"tragedy.jpeg")))))),RenderWhat.BG,"rally.jpeg"))));
         gameStory.get(0).add(new StoryLine("One day, he learns about a time machine experiment in an underground lab in China.",new StoryLine("Determined to prevent his child's fate, he uses his software skills to bypass security and access the time machine.",new StoryLine("Without hesitation, the protagonist travels back 32 years to 2015, finding himself in his younger body.",new StoryLine("He is determined to change the course of history and ensure a future where his child and all LGBTQ+ individuals are accepted and valued.",new StoryLine("Player : This is unbelievable! I am finally back in past! I feel so young... is this my home?",new StoryLine("Player : Judging by my home decoration, I think i am somewhere between 2012 and 2016.",new StoryLine("Player : I should head out, i don't want anyone noticing me as an adult. Also, how will i go back to the future!?",new StoryLine("You get out of your home to find out the fresh breeze outside",new StoryLine("Player : Wow i missed this place so much!",false),RenderWhat.BG,"dog-bg.jpeg"),RenderWhat.BG,"empty.png")),RenderWhat.BG,"house.jpeg"),RenderWhat.Left,"player-stand.png"),RenderWhat.BG,"time.jpg"),RenderWhat.Left,"man-stand.png"),RenderWhat.BG,"lab.jpeg"));
@@ -147,19 +155,18 @@ public class PrideParadox extends ApplicationAdapter {
         gameStory.get(0).add(new StoryLine("Player : Phew, he is finally calmed down...",false));
         gameStory.get(0).add(new StoryLine("Dog : woof... woof... (I act out because no one showed me love or boundaries.)",new StoryLine("Punish him!",new StoryLine("You grab the dog by his jaws and punch him until he is life less.",new StoryLine("The dog is no longer barking... knowing that the dog won't trouble the locals anymore you feel proud.", false),RenderWhat.Right,"empty.png")),new StoryLine("Pet him!",new StoryLine("You pet him lovingly, the dog is big in size and has been feared for it, ever since he was abbandoned all he wanted was love from someone",new StoryLine("Dog : Woof! (No one trained me to be good, so being bad is all I know. Now on... I shall not trouble the civillians for my fun.)",new StoryLine("You call the animal control to give this dog asylum, you hope to meet him again...",false),RenderWhat.Right,"empty.png")))));
         gameStory.get(0).add(new StoryLine("Well done! you made it through the first level! You can save your game from the next dialogue onwards.",false));
-
         gameStory.add(new Array<>());
         gameStory.get(1).add(new StoryLine("As you leave behind your village, you come across an old playground where you used to play cricket in... you get nostalgia!",new StoryLine("You remember how you used to practice to get good in the game and never gave up.", new StoryLine("You remember how you and your friends would go get a pav bhaji after a long sweaty game with all those brusies.",new StoryLine("Player : I really miss my childhood... I wish I could taste that chilled purified water back home.", new StoryLine("As you enjoy the view a football hits you in the back.",new StoryLine("Player : Hey, do you not see I am standing here? The court is just ahead go play there!",false),RenderWhat.Right,"kid-stand.png")))),RenderWhat.BG,"ground.jpeg"));
         gameStory.get(1).add(new StoryLine("A kid from afar smirks at you menacingly",new StoryLine("You wave your profiler tool in your watch to get information on the kid", new StoryLine("Foolish of you as the requests can't time travel into the future to a database, maybe you are not the brightest person to time travel.",new StoryLine("The kid is clearly a football fanatic. You should try dodging with your old goofy ahhh",new StoryLine("Kid : You look so gay in that appeal.",new StoryLine("You think to yourself- this kid probably boasting his delinquent connections and taking advantage of it.", new StoryLine("You think to yourself- this kid has clearly bad influence from his toxic environment and doesn't knows what right for him. Calling people chakka as a derogetory word...",new StoryLine("Player : Hey kid would you kick the ball at me once again?",true)))))))));
         gameStory.get(1).add(new StoryLine("Kid : you are surprisingly well, you don't come from here do you? where are you from?",new StoryLine("Player : That is least of your concern, why did you call me gay in the first place? do you think that's funny?", new StoryLine("Kid : Well, why not? They are the bottom feeders of the society, I don't feel safe around them, they are accused to be traffickers.",new StoryLine("You think to yourself- he is correct around this time the crime rates of such things were more...",new StoryLine("Suddenly another football comes at you!",new StoryLine("Kid : How pitiful of you to side on with those weird creeps, are you one of them?",true)))))));
         gameStory.get(1).add(new StoryLine("Player : Look the only reason they resort on doing bad work is because we don't give them opportunity! You should look at the world from their perspective as well!",new StoryLine("The kid is confused... he has some self doubts but comes back at giving you another fight",true)));
         gameStory.get(1).add(new StoryLine("The kid is now exhausted from giving his all",new StoryLine("Kid : You know what? maybe its right... I have never tried to see from other people's perspective, they have a different past...", new StoryLine("Kid : I have read in many articles that families have disowned the kids that came out to be not straight... what would happen if I was in their place...",new StoryLine("Player : Now, do you get it? It may look cool and all to say these slangs to make you look a little different from the crowd.",new StoryLine("Player : but that will absolutely will not change anything as people won't seem to care about it.", new StoryLine("Player : All that matters is what can you give to your country, so you will be remembered and loved.",new StoryLine("Kid : Blah blah blah shut up with your nonsense... (The kid tries to catch a breath from your long fairy tale)",new StoryLine("Kid : You know what? there is doctor that is psychotic you should really see him, he is able to treat the non binary people.", new StoryLine("Player : So... where exactly can I find this fellow?",new StoryLine("You received a map from the kid",new StoryLine("Kid : Well... this is all I can offer, it was nice to meet you. I have to get back home now",new StoryLine("With this you head to the clinic the boy's gifted map",new StoryLine("and with this the second level comes to an end!",false),RenderWhat.Right,"empty.png")))))))))))));
-
         gameStory.add(new Array<>());
         gameStory.get(2).add(new StoryLine("As you walk for hours through the city you finally find the clinic that has been known for making people straight",new StoryLine("You enter the clinic... the clinic is clean and shiny, you wonder how this doctor supposedly treats the people? could it be hypnosis?",new StoryLine("As you wait inside the clinic you look around yourself watching parents with their kids all quiet",new StoryLine("you act like your wife making you fit in with the other peoples there, and the clerk has noticed you. Its your turn to get treated",new StoryLine("As you enter the treatment room you find a doctor holding a syringe.",new StoryLine("Doctor : Come lay flat on the bed child, this shall not hurt you at all",new StoryLine("Player : What is this scam that you are running? Are you even a certified doctor?",new StoryLine("The doctor shows you all his degree in medical science. You are now convinced",new StoryLine("As the doctor approaches towards you, you get ready for the duel",true))))),RenderWhat.Right,"doctor-stand.png"))),RenderWhat.BG,"clinic.jpeg"));
         gameStory.get(2).add(new StoryLine("Player : What are all these pills you are giving me? T-E-S-T-O-S-T-E-R-O... Testosterone?",new StoryLine("Doctor : Wow you are quiet the reader... (I hope he doesn't realize what it means...)",true)));
         gameStory.get(2).add(new StoryLine("Player : Your cover has finally blown up doctor! admit it, you are fooling people instead of giving them the right advice!",new StoryLine("Doctor : Idiot... people here don't want to listen to the science... they just want the truth and I simply give an alternative solution",new StoryLine("Doctor : It's a basic supply and demand thing. You should not meddle with this. Get lost",new StoryLine("As the doctor approaches you to take you out of the clinic the duel begins!",true)))));
-
+        gameStory.get(2).add(new StoryLine("After fierce convincing doctor finally gives up!",new StoryLine("Doctor : Aaah! why are you so keen on saving these people's identity? They don't have future here!",new StoryLine("Player : you might be right doctor, infact changing the view of the society is like shooting your foot with a gun. It only backfires...",new StoryLine("Player : You might have made profit with it... but I ask you again do you think what you are doing is wrong?",new StoryLine("Doctor : Gender is a spectrum... in the begining everybody is a girl. It sounds funny, but many people won't agree...",new StoryLine("Doctor : As people grow, some of their other gender surfaces, maybe not totally, and thus that makes them different from us... or does it?", new StoryLine("Doctor : I myself identify as a gay, in my time studying in the foreign university I accepted myself and even the others did as well.",new StoryLine("Doctor : after settling here, I had to take heavy dosage of testosterone to keep myself stable. When I found out many arising gay kids in this area...",new StoryLine("I couldn't help but make use of them by giving them temporary solution instead of explaining the truth, cause when I tried...", new StoryLine("Doctor : People laughed at me... they mocked me... well I guess... I have to be the change if I want a reform.",new StoryLine("Doctor : Thank you for helping me out Player!",new StoryLine("With this doctor gets a change of heart and reveals what he has been doing around for years",false),RenderWhat.Right,"empty.png"))))))))))));
+        gameStory.get(2).add(new StoryLine("Doctor announces what he had done was wrong.",new StoryLine("Congratulations you completed the demo! You can now exit the game",false),RenderWhat.BG,"empty.png"));
     }
 
 
@@ -190,9 +197,9 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                     if(storyLineIndex==gameStory.get(currentLevel).size){
                         currentLevel++;
+                        initializeStory();
                         storyLineIndex=0;
                         currentWave=0;
-                        print("level : "+currentLevel);
                     }
 
                     lineSkip=false;
@@ -299,6 +306,7 @@ public class PrideParadox extends ApplicationAdapter {
     public static void initialize(){
 //        initializeEnemyType();
         initializeStory();
+
 //        initializeLevel(currentLevel,currentWave);
         initializeImages();
     }
@@ -331,7 +339,6 @@ public class PrideParadox extends ApplicationAdapter {
 
         if(playerAnimationId==2 && frameIndex>3){
             playerAnimationId=1;
-            print("player hurt");
             playerHurt=false;
             playerFPS=0.02f;
         }
@@ -342,7 +349,7 @@ public class PrideParadox extends ApplicationAdapter {
             player.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             for(ArenaBounds bounds:arenaBounds){
                 if(bounds.bounds.overlaps(player.getBoundingRectangle())){
-                    player.translate(-4f*amplitude* MathUtils.cos(radians),-4f*amplitude* MathUtils.sin(radians));
+                    player.translate(-2.5f*amplitude* MathUtils.cos(radians),-2.5f*amplitude* MathUtils.sin(radians));
                 }
             }
         }
@@ -1500,7 +1507,7 @@ public class PrideParadox extends ApplicationAdapter {
                         object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
                         delay=MathUtils.random(5,30);
                         object.scale(MathUtils.random(0f,1.5f));
-                        gravity = new Vector2(0, -9.8f*MathUtils.random(0.0f,3f));
+                        gravity = new Vector2(0, -9.8f*MathUtils.random(1.0f,3f));
                     }
                     if(animationIndex==2){
                         attackMode=false;
