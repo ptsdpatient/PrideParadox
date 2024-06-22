@@ -80,11 +80,10 @@ public class PrideParadox extends ApplicationAdapter {
     public Texture arena;
     public Texture bgTexture;
     public static Texture gameBG;
-    public Boolean renderGameBG=false,renderGameLeft=false,renderGameRight=false;
     public TextureRegion playerSheet;
     public static TextureRegion playerFrame;
     public TextureRegion[] loadButtonSheet,mobileButtonSheet,gameButtonSheet,kidSheet,dogSheet;
-    public ShapeRenderer shapeRenderer;
+//    public ShapeRenderer shapeRenderer;
     public static String typewriter,dialogueMessage="";
     public static EnemyAction FollowPlayer,StayAround;
     SpriteBatch batch;
@@ -107,7 +106,7 @@ public class PrideParadox extends ApplicationAdapter {
     }
     public enum RenderWhat{Left,BG,Right}
 
-    public enum EnemyActionType{Attack,Look,Move,Around, Bounce, Turn, Fall, Target, FaceCenter, Rotate}
+    public enum EnemyActionType{ThrowVer,Attack,Look,Move,Around, Bounce, Turn, Fall, Target, FaceCenter, PointAway, ThrowHor, Rotate}
 
 
     public static void handleOver(){
@@ -458,7 +457,191 @@ public class PrideParadox extends ApplicationAdapter {
                                         new EnemyClass(Kid,0,0,false,0,1f),
                                         new EnemyClass(Kid,0,0,false,0,1f),
                                         new EnemyClass(Kid,0,0,false,0,1f),
-                                },false)
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Kid,1,0,false,0,1f),
+                                        new EnemyClass(Kid,1,0,false,90,1f),
+                                        new EnemyClass(Kid,1,0,false,180,1f),
+                                        new EnemyClass(Kid,1,0,false,270,1f),
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,1,0,false,0,1f),
+                                        new EnemyClass(Kid,1,0,false,90,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                        new EnemyClass(Kid,2,1,false,0,1f),
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,2,0,false,0,1f),
+                                        new EnemyClass(Kid,2,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,0,false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,3,MathUtils.random(0,1),false,0,1f),
+                                        new EnemyClass(Kid,1,1,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,0,1f),
+                                        new EnemyClass(Kid,0,0,false,90,1f),
+                                        new EnemyClass(Kid,0,0,false,90,1f),
+                                        new EnemyClass(Kid,1,1,false,180,1f),
+                                },false),
+                },
+                new EnemyWave[]{
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,1,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                        new EnemyClass(Doctor,0,1,false,0,1f),
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,0,false,0,1.5f),
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,1,0,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,1,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,1,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,1,false,0,1.5f),
+                                        new EnemyClass(Doctor,2,1,false,0,1.5f),
+                                },false),
+                        new EnemyWave(
+                                new EnemyClass[]{
+                                        new EnemyClass(Doctor,3,1,false,0,1.5f),
+                                        new EnemyClass(Doctor,3,1,false,120,1.5f),
+                                        new EnemyClass(Doctor,3,1,false,240,1.5f),
+                                        new EnemyClass(Doctor,3,1,false,240,1.5f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                        new EnemyClass(Doctor,4,0,false,-90,1.75f),
+                                },true),
                 }
         );
 
@@ -483,7 +666,32 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static void initializeEnemyType(){
 
-        Array<EnemyAnimation[]> kidAanimation=new Array<>(),dogAnimation = new Array<>();
+        Array<EnemyAnimation[]> kidAanimation=new Array<>(),dogAnimation = new Array<>(),doctorAnimation=new Array<>();
+
+        doctorAnimation.clear();
+        doctorAnimation.addAll(
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.ThrowVer,30,1),
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.ThrowVer,30,-1),
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(FollowPlayer.type,280,35),
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.Attack,25f,25),
+                        new EnemyAnimation(EnemyActionType.Move,5f,5),
+                        new EnemyAnimation(EnemyActionType.Look,2f,0),
+                        new EnemyAnimation(EnemyActionType.Look,1f,1),
+                        new EnemyAnimation(StayAround.type,30,250),
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.Fall,10f,5),
+                }
+        );
+        Doctor=new EnemyType(extractSprites("doctor.png",64,64),doctorAnimation,"doctor");
+
 
         dogAnimation.clear();
         dogAnimation.addAll(
@@ -504,35 +712,33 @@ public class PrideParadox extends ApplicationAdapter {
 
         Dog=new EnemyType(extractSprites("dog.png",32,32),dogAnimation,"dog");
 
-        for(EnemyAnimation[] anim : Dog.animations){
-            for( EnemyAnimation a : anim){
-                print("Dog animation : "+a.type);
-            }
-        }
 
         kidAanimation.clear();
 
         kidAanimation.addAll(
                 new EnemyAnimation[]{
                         new EnemyAnimation(EnemyActionType.Bounce,200,4),
-                        new EnemyAnimation(EnemyActionType.Attack,3,30),
-                        new EnemyAnimation(EnemyActionType.FaceCenter,2,0)
+                        new EnemyAnimation(EnemyActionType.Move,3,2),
+                        new EnemyAnimation(EnemyActionType.Look,4,1)
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.Move,20,4),
+                        new EnemyAnimation(EnemyActionType.Look,0.5f,2),
+                        new EnemyAnimation(EnemyActionType.Move,12,4),
+                        new EnemyAnimation(EnemyActionType.Look,0.5f,2),
+                        new EnemyAnimation(EnemyActionType.Move,6,4),
+                        new EnemyAnimation(EnemyActionType.Look,3,0),
+                        new EnemyAnimation(StayAround.type,20,200),
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.ThrowHor,20,1)
+                },
+                new EnemyAnimation[]{
+                        new EnemyAnimation(EnemyActionType.ThrowHor,20,-1)
                 }
         );
+
         Kid=new EnemyType(extractSprites("kid.png",64,64),kidAanimation,"kid");
-
-        for(EnemyAnimation[] anim : Kid.animations){
-            for( EnemyAnimation a : anim){
-                print("Kid animation : "+a.type);
-            }
-        }
-
-        for(EnemyAnimation[] anim : Dog.animations){
-            for( EnemyAnimation a : anim){
-                print("Dog animation : "+a.type);
-            }
-        }
-
 
     }
 
@@ -558,7 +764,7 @@ public class PrideParadox extends ApplicationAdapter {
         titleFont.getData().setScale(1.5f);
 //		titleFont.getData().scale(2f);
 
-        shapeRenderer = new ShapeRenderer();
+//        shapeRenderer = new ShapeRenderer();
         batch = new SpriteBatch();
 
         menuBG = new Texture(files("thumb.png"));
@@ -733,14 +939,15 @@ public class PrideParadox extends ApplicationAdapter {
                     for(ExplosionEffect effect:explosionList){
                         effect.render(batch);
                         if(effect.die){
+                            effect.dispose();
                             explosionList.removeValue(effect,true);
                         }
                     }
                     for(EnemyClass enemy : enemyList){
                         enemy.render(batch);
                         if(enemy.health<=0){
+                            enemy.dispose();
                             enemyList.removeValue(enemy,true);
-                            score+=5;
                             scoreLayout=new GlyphLayout(titleFont,(int) score+"");
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                         }
@@ -750,6 +957,7 @@ public class PrideParadox extends ApplicationAdapter {
                             playerHurt=true;
                             Gdx.input.vibrate(300);
                             if(Controllers.getControllers().size>0)Controllers.getControllers().first().startVibration(300,0.7f);
+                            enemy.dispose();
                             enemyList.removeValue(enemy,true);
                             explosionList.add(new ExplosionEffect(enemy.bounds.x,enemy.bounds.y,1f));
                             playerFPS=0.1f;
@@ -760,12 +968,15 @@ public class PrideParadox extends ApplicationAdapter {
                         proj.render(batch);
                         for(ArenaBounds bounds : arenaBounds)
                             if(proj.obj.getBoundingRectangle().overlaps(bounds.getBounds())){
+                                proj.dispose();
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect((Objects.equals(bounds.name, "right"))?proj.obj.getX()+proj.obj.getWidth():proj.obj.getX(),(Objects.equals(bounds.name, "up"))?proj.obj.getY()+proj.obj.getHeight():proj.obj.getY(),0.2f));
                             }
                         for(EnemyClass enemy: enemyList){
                             if(enemy.getBounds(proj.getPoint())){
                                 enemy.health-=1.5f;
+                                score+=5;
+                                proj.dispose();
                                 projectileList.removeValue(proj,true);
                                 explosionList.add(new ExplosionEffect(proj.obj.getX(),proj.obj.getY(),0.2f));
                             }
@@ -873,15 +1084,16 @@ public class PrideParadox extends ApplicationAdapter {
 
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        for(EnemyClass enemy : enemyList){
-            shapeRenderer.setColor(Color.GREEN);
-            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
-            shapeRenderer.setColor(Color.BLUE);
-            shapeRenderer.rect(enemy.object.getX(),enemy.object.getY(),enemy.object.getWidth(),enemy.object.getHeight());
-        }
+//
+//        shapeRenderer.setProjectionMatrix(camera.combined);
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//
+//        for(EnemyClass enemy : enemyList){
+//            shapeRenderer.setColor(Color.GREEN);
+//            shapeRenderer.circle(enemy.bounds.x,enemy.bounds.y,enemy.bounds.radius);
+//            shapeRenderer.setColor(Color.BLUE);
+//            shapeRenderer.rect(enemy.object.getX(),enemy.object.getY(),enemy.object.getWidth(),enemy.object.getHeight());
+//        }
 //        shapeRenderer.rect(choiceABounds.x,choiceABounds.y,choiceABounds.width,choiceABounds.height);
 //        shapeRenderer.rect(choiceBBounds.x,choiceBBounds.y,choiceBBounds.width,choiceBBounds.height);
 
@@ -890,7 +1102,8 @@ public class PrideParadox extends ApplicationAdapter {
 //			Rectangle bounds = button.bounds;
 //			shapeRenderer.rect(bounds.x,bounds.y,bounds.width,bounds.height);
 //		}
-        shapeRenderer.end();
+//        shapeRenderer.end();
+
     }
 
     private void initializeWho(StoryLine currentLine) {
@@ -917,7 +1130,47 @@ public class PrideParadox extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        for(Projectile pro:projectileList)pro.dispose();
+        for(MenuButton btn : menuButtonArray)btn.dispose();
+        for(OverButton btn : overButtonList)btn.dispose();
+        for(ExplosionEffect eff:explosionList)eff.dispose();
+        for(PauseButton btn : pauseButtons)btn.dispose();
+        for(HealthBar bar : healthBars)bar.dispose();
+        for(GameButton btn : gameButtonList)btn.dispose();
+        for(LoadButton btn : loadButtonArray)btn.dispose();
+        for(EnemyWave[] enemyWave : enemyWaves)
+            for(EnemyWave enemy : enemyWave)
+                enemy.dispose();
+
+        for(EnemyClass enem : enemyList) enem.dispose();
+        for(MobileButton btn : mobileButtonList)btn.dispose();
+
+        transition.getTexture().dispose();
+        for(TextureRegion tex : loadButtonSheet)tex.getTexture().dispose();
+        for(TextureRegion tex : mobileButtonSheet)tex.getTexture().dispose();
+        for(TextureRegion tex : gameButtonSheet)tex.getTexture().dispose();
+        for(TextureRegion tex : Kid.texture)tex.getTexture().dispose();
+        for(TextureRegion tex : Dog.texture)tex.getTexture().dispose();
+        for(TextureRegion tex : Doctor.texture)tex.getTexture().dispose();
+
+        playerSheet.getTexture().dispose();
+        background.dispose();
+        dialogueFont.dispose();
+        choiceFont.dispose();
+        menuBG.dispose();
+        cursorTexture.dispose();
+        gamepadConnect.dispose();
+        gameSave.dispose();
+        htp.dispose();
+        arena.dispose();
+        bgTexture.dispose();
+        gameBG.dispose();
+        titleFont.dispose();
+        player.getTexture().dispose();
         batch.dispose();
+        leftChar.getTexture().dispose();
+        rightChar.getTexture().dispose();
+
     }
 
     public static void setChoiceDepth(){
@@ -1030,6 +1283,9 @@ public class PrideParadox extends ApplicationAdapter {
             obj.translate(amplitude* MathUtils.cos(radians),amplitude* MathUtils.sin(radians));
             obj.draw(sb);
         }
+        public void dispose(){
+            obj.getTexture().dispose();
+        }
     }
 
     public static class EnemyWave{
@@ -1038,6 +1294,12 @@ public class PrideParadox extends ApplicationAdapter {
         public EnemyWave(EnemyClass[] enemies,Boolean endFight){
             this.enemies=enemies;
             this.endFight=endFight;
+        }
+        public void dispose(){
+            for(EnemyClass enemy : enemies){
+                enemy.object.getTexture().dispose();
+                enemy.target.getTexture().dispose();
+            }
         }
     }
     public static class StoryLine {
@@ -1098,6 +1360,9 @@ public class PrideParadox extends ApplicationAdapter {
             if(index==1)bar.setSize(health*width/10f,bar.getHeight());
             bar.draw(sb);
         }
+        public void dispose(){
+            bar.getTexture().dispose();
+        }
     }
 
     public static class ExplosionEffect{
@@ -1114,6 +1379,9 @@ public class PrideParadox extends ApplicationAdapter {
             effects.update(Gdx.graphics.getDeltaTime());
             effects.draw(sb,Gdx.graphics.getDeltaTime());
             if(effects.isComplete())die=true;
+        }
+        public void dispose(){
+            effects.dispose();
         }
 
     }
@@ -1171,7 +1439,7 @@ public class PrideParadox extends ApplicationAdapter {
 
     public static class EnemyClass{
         private float alpha=0;
-        private float deltaX;
+        private float deltaX,initialVelocityY=0;
         private float deltaY;
         private float scaleFactor;
         public float time=0,parameter=0,delay=-1;
@@ -1235,8 +1503,8 @@ public class PrideParadox extends ApplicationAdapter {
                         object.setAlpha(0f);
                         object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
                         delay=MathUtils.random(5,30);
-                        gravity = new Vector2(0, -9.8f*MathUtils.random(1.0f,3.5f));
                         object.scale(MathUtils.random(0f,1.5f));
+                        gravity = new Vector2(0, -9.8f*MathUtils.random(0.0f,3f));
                     }
                     if(animationIndex==2){
                         attackMode=false;
@@ -1260,9 +1528,56 @@ public class PrideParadox extends ApplicationAdapter {
                         delay=1f;
 //                        print(animationList.peek().type+"");
                     }
+                    if(animationIndex==1){
+                        object.setAlpha(0f);
+                        delay=MathUtils.random(7,20);
+                    }
+                    if(animationIndex==2){
+                        update=false;
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320-object.getWidth()*MathUtils.random(1,3),320-object.getWidth()),MathUtils.random(120,180));
+                        delay=MathUtils.random(3,30);
+                        gravity = new Vector2(0, -9.8f);
+                        initialVelocityY=MathUtils.random(0f,8.0f);
+                    }
+                    if(animationIndex==3){
+                        update=false;
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(960+object.getWidth()*MathUtils.random(1,3),960+object.getWidth()),MathUtils.random(120,180));
+                        delay=MathUtils.random(3,40);
+                        gravity = new Vector2(0, -9.8f);
+                        initialVelocityY=MathUtils.random(2f,8.0f);
+                    }
                 }break;
-            }
 
+                case "doctor":{
+                    if(animationIndex==0){
+                        update=false;
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),120-object.getHeight());
+                        delay=MathUtils.random(3,30);
+                        gravity = new Vector2(0, -9.8f);
+                        initialVelocityY=MathUtils.random(2f,6.0f);
+                    }
+                    if(animationIndex==1){
+                        update=false;
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320,960-object.getWidth()),600);
+                        delay=MathUtils.random(3,30);
+                        gravity = new Vector2(0, 9.8f);
+                        initialVelocityY=MathUtils.random(2f,6.0f);
+                    }
+                    if(animationIndex==4){
+                        update=false;
+                        object.setAlpha(0f);
+                        object.setPosition(MathUtils.random(320+object.getWidth(),960-object.getWidth()),600);
+                        delay=MathUtils.random(5,30);
+                        object.scale(MathUtils.random(0f,1.2f));
+                        gravity = new Vector2(0, -9.8f*MathUtils.random(2.0f,9.0f));
+                    }
+                }break;
+
+            }
             position = new Vector2(object.getX(), object.getY());
             velocity = new Vector2(0, 0);
 
@@ -1284,7 +1599,6 @@ public class PrideParadox extends ApplicationAdapter {
 
                 if(update&&delay<=0){
                     animationList.peek().update();
-//                    print("updating"+animationList.peek().duration);
                 }
 
                 delay-=Gdx.graphics.getDeltaTime();
@@ -1308,6 +1622,12 @@ public class PrideParadox extends ApplicationAdapter {
                         case Move:{
                             move(parameter);
                         }break;
+                        case ThrowHor: {
+                            throwHorizontal(parameter);
+                        }break;
+                        case ThrowVer:{
+                            throwVertical(parameter);
+                        }break;
                         case Around:{
                             stayAroundPlayer(parameter);
                         }break;
@@ -1316,6 +1636,9 @@ public class PrideParadox extends ApplicationAdapter {
                         }break;
                         case Rotate:{
                             rotate(parameter);
+                        }break;
+                        case PointAway:{
+                            pointAway(parameter);
                         }break;
                         case Attack:{
                             attack(parameter);
@@ -1329,7 +1652,6 @@ public class PrideParadox extends ApplicationAdapter {
                 if(animationList.peek().duration<0){
                     animationList.pop();
                 }
-
             }else{
                 health=0;
             }
@@ -1343,6 +1665,16 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         //methods
+        public void pointAway(float parameter){
+            float playerCenterX = player.getX() + player.getWidth() / 2;
+            float playerCenterY = player.getY() + player.getHeight() / 2;
+            float objectCenterX = object.getX() + object.getWidth() / 2;
+            float objectCenterY = object.getY() + object.getHeight() / 2;
+            deltaX = playerCenterX - objectCenterX;
+            deltaY = playerCenterY - objectCenterY;
+            object.setRotation((float) Math.toDegrees((float) Math.atan2(deltaY, deltaX)));
+            object.rotate(MathUtils.random(-parameter,parameter));
+        }
         public void target(){
             if(delay<0 && delay>-4 && targetAlpha!=1){
                 targetAlpha+=Gdx.graphics.getDeltaTime()/4f;
@@ -1364,7 +1696,8 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         public void faceCenter(){
-            object.setRotation(new Vector2(0, 0).sub(object.getX(), object.getY()).angleDeg());
+
+
         }
         public void facePlayer(){
             float playerCenterX = player.getX() + player.getWidth() / 2;
@@ -1377,18 +1710,10 @@ public class PrideParadox extends ApplicationAdapter {
         }
 
         public void fall (){
-
             velocity.add(gravity.x * Gdx.graphics.getDeltaTime(), gravity.y * Gdx.graphics.getDeltaTime());
             position.add(velocity.x * Gdx.graphics.getDeltaTime(), velocity.y * Gdx.graphics.getDeltaTime());
             object.setPosition(position.x, position.y);
-
-            for(ArenaBounds bounds : arenaBounds){
-                if(object.getBoundingRectangle().overlaps(bounds.getBounds())){
-                    if(Objects.equals(bounds.name, "down")){
-                        health=-1;
-                    }
-                }
-            }
+            if(object.getY()<90)health=-1;
         }
 
         public  void stayAroundPlayer(float distance){
@@ -1405,12 +1730,11 @@ public class PrideParadox extends ApplicationAdapter {
             object.rotate(amplitude);
         }
         public void rotate(){
-            object.rotate(4f);
+            object.rotate(1.2f);
         }
         public void attack(float parameter){
-            Vector2 playerPos=new Vector2(player.getX(),player.getY());
-            Vector2 direction = playerPos.cpy().sub(position).nor();
-            velocity.add(direction.scl(parameter * Gdx.graphics.getDeltaTime()));
+            velocity.add(new Vector2(player.getX(), player.getY()).cpy().sub(position).nor().scl(parameter * Gdx.graphics.getDeltaTime()));
+            velocity.clamp(0, 500f);
             position.add(velocity.cpy().scl(Gdx.graphics.getDeltaTime()));
             object.setPosition(position.x, position.y);
         }
@@ -1442,9 +1766,6 @@ public class PrideParadox extends ApplicationAdapter {
                     move(parameter);
                 }
             }
-
-
-
         }
         public void waveHorizontal(){
             object.setPosition(time * 100, Gdx.graphics.getHeight() / 2f + 50 * (float)Math.sin(time * 2));
@@ -1458,17 +1779,21 @@ public class PrideParadox extends ApplicationAdapter {
         public void tanVertical(){
             object.setPosition(time * 100, Gdx.graphics.getWidth() / 2f + 50 * (float)Math.tan(time * 2));
         }
-        public void throwHorizontal(float initialVelocityY){
-            float initialVelocityX = 200;
-            deltaX = initialVelocityX * time;
-            deltaY = Gdx.graphics.getHeight() / 2f + initialVelocityY * time + 0.5f * gravity.y * time * time;
-            object.setPosition(deltaX, deltaY);
+        public void throwHorizontal(float parameter){
+            object.setPosition((parameter==1?320:960)+250*parameter * -delay, 200 + initialVelocityY*50f * -delay + 0.5f * gravity.y*15f * -delay * -delay);
+            if(object.getY()<50)health=-1;
+            object.rotate(Math.max(1f, 10f - object.getY()/ 20f));
         }
-        public void throwVertical(float initialVelocityX){
-            deltaY = initialVelocityX * time;
-            float initialVelocityY = 300;
-            deltaX = Gdx.graphics.getWidth() / 2f + initialVelocityY * time + 0.5f * gravity.x * time * time;
-            object.setPosition(deltaX, deltaY);
+        public void throwVertical(float parameter){
+            object.setY((parameter==1?120-object.getHeight():600+object.getHeight()) + initialVelocityY*50f *parameter* -delay + 0.5f * gravity.y*7f * -delay * -delay);
+            if(parameter==1?object.getY()<50:object.getY()>740)health=-1;
+            object.rotate(Math.max(1f, (parameter==1?(10 - object.getY() / 20f):(1/(10 - object.getY() / 20f)))));
+        }
+
+        public void dispose(){
+            object.getTexture().dispose();
+            target.getTexture().dispose();
+
         }
     }
 
@@ -1484,6 +1809,9 @@ public class PrideParadox extends ApplicationAdapter {
             object.setOriginCenter();
             object.setPosition(x,y);
             object.setScale(1.35f);
+        }
+        public void dispose(){
+            object.getTexture().dispose();
         }
         public void render(SpriteBatch batch) {
             object.draw(batch);
@@ -1515,7 +1843,9 @@ public class PrideParadox extends ApplicationAdapter {
             }
             font.setColor(1, 1, 1, index == overButtonActiveIndex ? alpha : 1);
         }
-
+        public void dispose(){
+            font.dispose();
+        }
         public Boolean isTouching(Vector2 touch) {
             return bounds.contains(touch);
         }
@@ -1551,6 +1881,10 @@ public class PrideParadox extends ApplicationAdapter {
             if (index == loadButtonIndex)alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 1.5 * Math.PI));
             font.setColor(1,1,1,(index==loadButtonIndex)?alpha:1);
             object.setAlpha(index == loadButtonIndex ? alpha : 1);
+        }
+        public void dispose(){
+            font.dispose();
+            object.getTexture().dispose();
         }
     }
 
@@ -1596,6 +1930,9 @@ public class PrideParadox extends ApplicationAdapter {
             this.button.setScale(4f);
             this.name=name;
         }
+        public void dispose(){
+            button.getTexture().dispose();
+        }
         public void render(SpriteBatch batch){
             button.draw(batch);
         }
@@ -1625,6 +1962,9 @@ public class PrideParadox extends ApplicationAdapter {
                 alpha = (float) (0.5 + 0.5 * Math.sin(timeElapsed * 3 * Math.PI));
             }
             font.setColor(1, 1, 1, index == menuButtonActiveIndex ? alpha : 1);
+        }
+        public void dispose(){
+            font.dispose();
         }
 
         public Boolean isTouching(Vector2 touch) {
@@ -1657,7 +1997,9 @@ public class PrideParadox extends ApplicationAdapter {
             }
             font.setColor(1, 1, 1, index == pauseButtonActiveIndex ? alpha : 1);
         }
-
+        public void dispose(){
+            font.dispose();
+        }
         public Boolean isTouching(Vector2 touch) {
             return bounds.contains(touch);
         }
@@ -1775,7 +2117,7 @@ public class PrideParadox extends ApplicationAdapter {
                         initialize();
                         gameState=GameState.Play;
                         gameStarted=true;
-                        initializeLevel(1,0);
+                        initializeLevel(2,3);
                     }
 
                 }break;
