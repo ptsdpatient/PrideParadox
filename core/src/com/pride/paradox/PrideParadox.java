@@ -218,6 +218,17 @@ public class PrideParadox extends ApplicationAdapter {
                         initializeLevel(currentLevel,currentWave);
                         print(currentLevel+" : "+currentWave);
                         fight=true;
+                        switch(currentLevel){
+                            case 0:{
+                                dogTheme.play();
+                            }break;
+                            case 1:{
+                                kidTheme.play();
+                            }break;
+                            case 2:{
+                                clinicTheme.play();
+                            }break;
+                        }
                         drawingText=false;
                         drawingDialogue=false;
                     }
@@ -959,8 +970,6 @@ public class PrideParadox extends ApplicationAdapter {
                 }
 
                 if(fight){
-
-
                     for(HealthBar bar : healthBars)bar.render(batch);
                     batch.draw(arena,1280/2f-640/2f,720/2f-480/2f,640,480);
 
@@ -1021,6 +1030,9 @@ public class PrideParadox extends ApplicationAdapter {
 
                     if(health<1){
                         gameState=GameState.Over;
+                        dogTheme.stop();
+                        clinicTheme.stop();
+                        kidTheme.stop();
                         menuTheme.play();
                     }
 
@@ -1035,6 +1047,9 @@ public class PrideParadox extends ApplicationAdapter {
                         transition.setAlpha(transitionAlpha);
                         transition.draw(batch);
                         if(transitionAlpha>0.95) {
+                            dogTheme.pause();
+                            kidTheme.pause();
+                            clinicTheme.pause();
                             drawingDialogue = true;
                             drawingText = true;
                             fight = false;
@@ -2211,6 +2226,9 @@ public class PrideParadox extends ApplicationAdapter {
 
                     if((buttonCode==3||buttonCode==4)){
                         gameState=GameState.Pause;
+                        dogTheme.pause();
+                        clinicTheme.pause();
+                        kidTheme.pause();
                         menuTheme.play();
                     }
                     if(fight){
@@ -2469,6 +2487,9 @@ public class PrideParadox extends ApplicationAdapter {
                     }
                     if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
                         gameState=GameState.Menu;
+                        dogTheme.pause();
+                        clinicTheme.pause();
+                        kidTheme.pause();
                     }
                 }break;
 
@@ -2505,6 +2526,9 @@ public class PrideParadox extends ApplicationAdapter {
                 case Play:{
                     if((keycode==Input.Keys.ESCAPE||keycode==Input.Keys.BACKSPACE)){
                         menuTheme.play();
+                        dogTheme.pause();
+                        clinicTheme.pause();
+                        kidTheme.pause();
                         gameState=GameState.Pause;
                     }
                     if(fight){
